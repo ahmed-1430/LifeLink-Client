@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 /* eslint-disable react-hooks/set-state-in-effect */
 import React, { createContext, useEffect, useState } from 'react';
-import jwtDecode from 'jwt-decode';
+import { jwtDecode } from "jwt-decode";
 import API from '../api/axios';
 
 
@@ -17,7 +17,11 @@ export const AuthProvider = ({ children }) => {
         if (token) {
             try {
                 const decoded = jwtDecode(token);
-                setUser({ email: decoded.email, role: decoded.role, userId: decoded.userId });
+                setUser({
+                    email: decoded.email,
+                    role: decoded.role,
+                    userId: decoded.userId
+                });
             } catch (err) {
                 console.error('Invalid token', err);
                 setUser(null);
