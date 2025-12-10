@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import ProtectedRoute from "./Routes/ProtectedRoute";
 import PublicLayout from "./layouts/PublicLayout";
+import Home from "./pages/Home";
 
 
 
@@ -9,7 +10,7 @@ const router = createBrowserRouter([
   {
     element: <PublicLayout/>,   
     children: [
-      { path: "/", element: <h1>Home</h1> },
+      { path: "/", element: <Home/> },
       { path: "/login", element: <h1>Login</h1> },
       { path: "/register", element: <h1>register</h1> },
     ],
