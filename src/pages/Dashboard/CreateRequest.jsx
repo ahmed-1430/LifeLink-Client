@@ -14,7 +14,7 @@ const initialForm = {
     urgent: false,
 };
 
-export default function CreateRequest() {
+const CreateRequest = () => {
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();
 
@@ -284,3 +284,4 @@ export default function CreateRequest() {
         </div>
     );
 }
+export default CreateRequest;

@@ -4,7 +4,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { Link } from "react-router-dom";
 import StatCard from "../../Component/StatCard";
 
-export default function DonorHome() {
+const DonorHome = () => {
     const { user } = useContext(AuthContext);
 
     const [stats, setStats] = useState({
@@ -165,3 +165,4 @@ export default function DonorHome() {
         </div>
     );
 }
+export default DonorHome;
