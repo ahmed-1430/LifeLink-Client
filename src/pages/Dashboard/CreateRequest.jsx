@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import API from "../../api/axios";
 import { AuthContext } from "../../context/AuthContext";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 const initialForm = {
     patientName: "",

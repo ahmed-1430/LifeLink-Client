@@ -6,6 +6,8 @@ import DonorHome from "./pages/Dashboard/DonorHome";
 import MyRequests from "./pages/Dashboard/MyRequests";
 import CreateRequest from "./pages/Dashboard/CreateRequest";
 import Login from "./pages/Auth/Login";
+import Register from "./pages/Auth/Register";
+import DashboardLayout from "./layouts/DashboardLayout";
 
 
 
@@ -15,8 +17,8 @@ const router = createBrowserRouter([
     element: <PublicLayout />,
     children: [
       { path: "/", element: <Home /> },
-      { path: "/login", element: <Login/>},
-      { path: "/register", element: <h1>register</h1> },
+      { path: "/login", element: <Login /> },
+      { path: "/register", element: <Register /> },
     ],
   },
 
@@ -25,7 +27,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/dashboard",
-        element: <h1>appshell</h1>,
+        element: <DashboardLayout />,
         children: [
           { index: true, element: <DonorHome /> },
           { path: "requests", element: <MyRequests /> },
