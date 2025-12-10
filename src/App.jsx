@@ -2,6 +2,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import ProtectedRoute from "./Routes/ProtectedRoute";
 import PublicLayout from "./layouts/PublicLayout";
 import Home from "./pages/Home";
+import DonorHome from "./pages/Dashboard/DonorHome";
 
 
 
@@ -21,9 +22,9 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/dashboard",
-        element: <h1>appshell</h1>,   // 
+        element: <h1>appshell</h1>,   
         children: [
-          { index: true, element: <h1>donor home page</h1> },
+          { index: true, element: <DonorHome/> },
           { path: "requests", element: <h1>My requests</h1> },
           { path: "create", element: <h1>Create Request</h1> },
         ],
