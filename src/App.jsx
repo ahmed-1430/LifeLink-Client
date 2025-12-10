@@ -8,6 +8,7 @@ import CreateRequest from "./pages/Dashboard/CreateRequest";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 import DashboardLayout from "./layouts/DashboardLayout";
+import VolunteerHome from "./pages/Dashboard/VolunteerHome";
 
 
 
@@ -41,6 +42,19 @@ const router = createBrowserRouter([
     element: <ProtectedRoute roles={["admin"]} />,
     children: [{ path: "/admin", element: <div>Admin Area</div> }],
   },
+  {
+    element: <ProtectedRoute roles={["volunteer"]} />,
+    children: [
+      {
+        path: "/volunteer",
+        element: <DashboardLayout />,
+        children: [
+          { index: true, element: <VolunteerHome /> },
+        ],
+      },
+    ],
+  },
+
 ]);
 
 export default function App() {
