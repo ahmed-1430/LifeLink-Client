@@ -3,30 +3,33 @@ import ProtectedRoute from "./Routes/ProtectedRoute";
 import PublicLayout from "./layouts/PublicLayout";
 import Home from "./pages/Home";
 import DonorHome from "./pages/Dashboard/DonorHome";
+import MyRequests from "./pages/Dashboard/MyRequests";
+import CreateRequest from "./pages/Dashboard/CreateRequest";
+import Login from "./pages/Auth/Login";
 
 
 
 
 const router = createBrowserRouter([
   {
-    element: <PublicLayout/>,   
+    element: <PublicLayout />,
     children: [
-      { path: "/", element: <Home/> },
-      { path: "/login", element: <h1>Login</h1> },
+      { path: "/", element: <Home /> },
+      { path: "/login", element: <Login/>},
       { path: "/register", element: <h1>register</h1> },
     ],
   },
 
   {
-    element: <ProtectedRoute />,  
+    element: <ProtectedRoute />,
     children: [
       {
         path: "/dashboard",
-        element: <h1>appshell</h1>,   
+        element: <h1>appshell</h1>,
         children: [
-          { index: true, element: <DonorHome/> },
-          { path: "requests", element: <h1>My requests</h1> },
-          { path: "create", element: <h1>Create Request</h1> },
+          { index: true, element: <DonorHome /> },
+          { path: "requests", element: <MyRequests /> },
+          { path: "create", element: <CreateRequest /> },
         ],
       },
     ],
