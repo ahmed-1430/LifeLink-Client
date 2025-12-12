@@ -5,19 +5,15 @@ const VolunteerHome = () => {
     const [loading, setLoading] = useState(true);
     const [requests, setRequests] = useState([]);
     const [stats, setStats] = useState({ pending: 0, active: 0, completed: 0 });
+    const [actionLoading, setActionLoading] = useState(null); // id of request being processed
 
     useEffect(() => {
         const load = async () => {
             try {
                 setLoading(true);
-
-                // Get all public requests (or volunteer-specific backend route)
                 const res = await API.get("/requests");
-                const all = res.data || [];
-
+                const all = Array.isArray(res.data) ? res.data : (res.data?.data || []);
                 setRequests(all);
-
-                // Auto-calc basic stats
                 setStats({
                     pending: all.filter((r) => r.status === "pending").length,
                     active: all.filter((r) => r.status === "accepted").length,
@@ -32,6 +28,36 @@ const VolunteerHome = () => {
 
         load();
     }, []);
+
+    const acceptRequest = async (reqId) => {
+        if (!window.confirm("Accept this request and volunteer to help?")) return;
+
+        setActionLoading(reqId);
+        // optimistic update
+        const old = [...requests];
+        setRequests((prev) => prev.map((r) => (r._id === reqId ? { ...r, status: "accepted" } : r)));
+
+        try {
+            const res = await API.post(`/requests/${reqId}/accept`);
+            const updated = res.data?.request || res.data;
+            // replace in list with server response (if returned)
+            setRequests((prev) => prev.map((r) => (r._id === reqId ? updated : r)));
+            // update stats
+            setStats((s) => ({
+                ...s,
+                pending: Math.max(0, s.pending - 1),
+                active: s.active + 1,
+            }));
+            alert("Request accepted — thank you!");
+        } catch (err) {
+            console.error("Accept failed:", err);
+            alert(err.response?.data?.message || "Failed to accept request");
+            // rollback
+            setRequests(old);
+        } finally {
+            setActionLoading(null);
+        }
+    };
 
     if (loading) {
         return <div className="text-center py-10 text-slate-500">Loading volunteer data...</div>;
@@ -81,15 +107,21 @@ const VolunteerHome = () => {
 
                                 <div className="mt-3 md:mt-0 flex items-center gap-3">
                                     {req.status === "pending" && (
-                                        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                            Accept Request
+                                        <button
+                                            onClick={() => acceptRequest(req._id)}
+                                            disabled={actionLoading === req._id}
+                                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-60"
+                                        >
+                                            {actionLoading === req._id ? "Accepting..." : "Accept Request"}
                                         </button>
                                     )}
 
                                     {req.status === "accepted" && (
-                                        <button className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
-                                            Mark Completed
-                                        </button>
+                                        <span className="px-3 py-1 rounded-md bg-orange-100 text-orange-700">Accepted</span>
+                                    )}
+
+                                    {req.status === "completed" && (
+                                        <span className="px-3 py-1 rounded-md bg-green-100 text-green-700">Completed</span>
                                     )}
                                 </div>
                             </div>
