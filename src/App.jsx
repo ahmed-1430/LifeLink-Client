@@ -9,6 +9,7 @@ import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 import DashboardLayout from "./layouts/DashboardLayout";
 import VolunteerHome from "./pages/Dashboard/VolunteerHome";
+import AdminDashboard from "./pages/Admin/AdminDashboard";
 
 
 
@@ -40,7 +41,13 @@ const router = createBrowserRouter([
 
   {
     element: <ProtectedRoute roles={["admin"]} />,
-    children: [{ path: "/admin", element: <div>Admin Area</div> }],
+    children: [
+      {
+        path: "/admin",
+        element: <DashboardLayout />,
+        children: [{ index: true, element: <AdminDashboard /> }],
+      },
+    ],
   },
   {
     element: <ProtectedRoute roles={["volunteer"]} />,
