@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import API from "../../api/axios";
+import { toast } from "../../Component/toast";
 
 const VolunteerHome = () => {
     const [loading, setLoading] = useState(true);
@@ -48,10 +49,10 @@ const VolunteerHome = () => {
                 pending: Math.max(0, s.pending - 1),
                 active: s.active + 1,
             }));
-            alert("Request accepted — thank you!");
+            toast.success("Request accepted — thank you!");
         } catch (err) {
             console.error("Accept failed:", err);
-            alert(err.response?.data?.message || "Failed to accept request");
+            toast.error(err.response?.data?.message || "Failed to accept request");
             // rollback
             setRequests(old);
         } finally {

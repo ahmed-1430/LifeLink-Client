@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import API from "../../api/axios";
+import { toast } from "../../Component/toast";
 
 const MyRequests = () => {
     const [requests, setRequests] = useState([]);
@@ -100,7 +101,7 @@ const MyRequests = () => {
                                     <td className="py-3 px-4 text-right">
                                         <button
                                             className="text-blue-600 hover:underline text-sm"
-                                            onClick={() => alert("Details coming soon")}
+                                            onClick={() => toast.info("Details coming soon")}
                                         >
                                             View
                                         </button>
