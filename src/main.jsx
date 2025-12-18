@@ -6,6 +6,7 @@ import './app.css'
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
+    <ToastContainer />
     <AuthProvider>
       <App />
     </AuthProvider>
