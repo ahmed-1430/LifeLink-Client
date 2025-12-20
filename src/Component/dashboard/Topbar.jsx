@@ -1,6 +1,7 @@
 import Button from "../ui/Button";
 
 export default function Topbar({ user, onLogout }) {
+    console.log(user)
     return (
         <header className="h-16 bg-white border-b flex items-center justify-between px-6">
             <div>

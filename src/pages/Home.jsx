@@ -14,7 +14,7 @@ export default function Home() {
       {/* HERO */}
       <section ref={heroRef} className="reveal relative overflow-hidden">
         {/* Emotional gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-rose-50 via-white to-blue-50" />
+        <div className="absolute inset-0 bg-linear-to-br from-rose-50 via-white to-blue-50" />
 
         {/* Glow */}
         <div className="absolute top-20 left-20 w-[400px] h-[400px] bg-rose-400/30 rounded-full blur-[120px]" />

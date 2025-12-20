@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-refresh/only-export-components */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { createContext, useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
@@ -37,6 +39,8 @@ export const AuthProvider = ({ children }) => {
                     email: decoded.email,
                     role: decoded.role,
                     userId: decoded.userId,
+                    name: decoded.name,
+                    avatar: decoded.avatar,
                 });
             }
         }

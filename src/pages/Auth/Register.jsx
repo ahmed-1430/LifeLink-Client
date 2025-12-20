@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useEffect, useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../../api/axios";
@@ -242,7 +243,7 @@ export default function Register() {
                         >
                             <option value="">Select district</option>
                             {districts.map((d) => (
-                                <option key={d._id} value={d._id}>
+                                <option key={d.id} value={d.id}>
                                     {d.name}
                                 </option>
                             ))}
@@ -257,7 +258,7 @@ export default function Register() {
                         >
                             <option value="">Select upazila</option>
                             {upazilas.map((u) => (
-                                <option key={u._id}>{u.name}</option>
+                                <option key={u.id}>{u.name}</option>
                             ))}
                         </select>
 
