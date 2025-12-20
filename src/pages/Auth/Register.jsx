@@ -2,14 +2,13 @@ import React, { useEffect, useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import { AuthContext } from "../../context/AuthContext";
-
-import Card from "../../components/ui/Card";
-import Button from "../../components/ui/Button";
+import Button from "../../component/ui/Button";
+import { Droplet } from "lucide-react";
 
 const defaultAvatar = (name) =>
     `https://ui-avatars.com/api/?name=${encodeURIComponent(
         name
-    )}&background=0D8ABC&color=fff&rounded=true`;
+    )}&background=E11D48&color=fff&rounded=true`;
 
 export default function Register() {
     const navigate = useNavigate();
@@ -30,50 +29,34 @@ export default function Register() {
     const [fetchingDistricts, setFetchingDistricts] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const [successMsg, setSuccessMsg] = useState("");
 
-    // -------------------------
-    // Load Districts
-    // -------------------------
+    /* ---------------- Load Districts ---------------- */
     useEffect(() => {
         const loadDistricts = async () => {
             try {
                 setFetchingDistricts(true);
                 const res = await API.get("/districts");
-                const raw = res.data;
-
-                if (Array.isArray(raw)) setDistricts(raw);
-                else if (raw?.data && Array.isArray(raw.data)) setDistricts(raw.data);
-                else setDistricts([]);
+                setDistricts(Array.isArray(res.data) ? res.data : []);
             } catch {
                 setDistricts([]);
             } finally {
                 setFetchingDistricts(false);
             }
         };
-
         loadDistricts();
     }, []);
 
-    // -------------------------
-    // Load Upazilas
-    // -------------------------
+    /* ---------------- Load Upazilas ---------------- */
     useEffect(() => {
         if (!form.district) return setUpazilas([]);
-
         const loadUpazilas = async () => {
             try {
                 const res = await API.get(`/upazilas/${form.district}`);
-                const raw = res.data;
-
-                if (Array.isArray(raw)) setUpazilas(raw);
-                else if (raw?.data && Array.isArray(raw.data)) setUpazilas(raw.data);
-                else setUpazilas([]);
+                setUpazilas(Array.isArray(res.data) ? res.data : []);
             } catch {
                 setUpazilas([]);
             }
         };
-
         loadUpazilas();
     }, [form.district]);
 
@@ -81,20 +64,19 @@ export default function Register() {
         setForm((s) => ({ ...s, [e.target.name]: e.target.value }));
 
     const validate = () => {
-        if (!form.name.trim()) return "Full name is required.";
-        if (!form.email.trim()) return "Email is required.";
+        if (!form.name) return "Full name is required.";
+        if (!form.email) return "Email is required.";
         if (form.password.length < 6)
             return "Password must be at least 6 characters.";
-        if (!form.bloodGroup) return "Select a blood group.";
-        if (!form.district) return "Select your district.";
-        if (!form.upazila) return "Select your upazila.";
+        if (!form.bloodGroup) return "Select blood group.";
+        if (!form.district) return "Select district.";
+        if (!form.upazila) return "Select upazila.";
         return null;
     };
 
     const submit = async (e) => {
         e.preventDefault();
         setError("");
-        setSuccessMsg("");
 
         const v = validate();
         if (v) return setError(v);
@@ -108,29 +90,21 @@ export default function Register() {
             };
 
             const res = await API.post("/register", payload);
-
-            const token =
-                res.data?.token || res.data?.accessToken || res.data?.jwt;
-            const user = res.data?.user || null;
+            const token = res.data?.token;
+            const user = res.data?.user;
 
             if (token) {
                 login(token, user);
-                return navigate("/dashboard", { replace: true });
+                return navigate("/dashboard");
             }
 
-            // fallback login
             const loginRes = await API.post("/login", {
                 email: form.email,
                 password: form.password,
             });
 
-            if (loginRes.data?.token) {
-                login(loginRes.data.token, loginRes.data.user);
-                return navigate("/dashboard", { replace: true });
-            }
-
-            setSuccessMsg("Registration successful. Please login.");
-            setTimeout(() => navigate("/login"), 1000);
+            login(loginRes.data.token, loginRes.data.user);
+            navigate("/dashboard");
         } catch (err) {
             setError(
                 err.response?.data?.message ||
@@ -142,177 +116,129 @@ export default function Register() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-            <Card className="w-full max-w-4xl p-0 overflow-hidden">
-                <div className="grid grid-cols-1 lg:grid-cols-2">
-                    {/* LEFT — BRAND */}
-                    <div className="hidden lg:flex flex-col justify-between p-10 bg-linear-to-b from-blue-600 to-blue-700 text-white">
-                        <div>
-                            <h1 className="text-2xl font-semibold">LifeLink</h1>
-                            <p className="mt-1 text-sm opacity-90">
-                                A trusted blood donation network
-                            </p>
-                        </div>
+        <div className="min-h-screen grid md:grid-cols-2 bg-[#F8FAFC]">
 
-                        <div>
-                            <h2 className="text-3xl font-semibold">
-                                Create your account
-                            </h2>
-                            <p className="mt-3 text-sm text-white/90">
-                                Join thousands of donors helping save lives across the country.
-                            </p>
-                        </div>
-
-                        <p className="text-sm opacity-80">
-                            Secure • Fast • Community-driven
-                        </p>
+            {/* LEFT BRAND */}
+            <div className="hidden md:flex flex-col justify-center px-16 bg-linear-to-br from-rose-50 via-white to-blue-50">
+                <div className="max-w-md">
+                    <div className="flex items-center gap-2 mb-6">
+                        <span className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center font-bold">
+                            L
+                        </span>
+                        <span className="text-xl font-bold text-slate-900">LifeLink</span>
                     </div>
 
-                    {/* RIGHT — FORM */}
-                    <div className="p-8">
-                        <h2 className="text-2xl font-semibold text-slate-900">
-                            Sign up
-                        </h2>
-                        <p className="text-sm text-slate-500 mt-1">
-                            Create your LifeLink account
-                        </p>
+                    <h1 className="text-3xl font-bold text-slate-900">
+                        Become a donor.
+                        <br />
+                        Save lives today.
+                    </h1>
 
-                        {error && (
-                            <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
-                                {error}
-                            </div>
-                        )}
-
-                        {successMsg && (
-                            <div className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">
-                                {successMsg}
-                            </div>
-                        )}
-
-                        <form
-                            onSubmit={submit}
-                            className="mt-6 space-y-5"
-                        >
-                            {/* Identity */}
-                            <div className="space-y-3">
-                                <h3 className="text-sm font-medium text-slate-700">
-                                    Personal Information
-                                </h3>
-
-                                <input
-                                    name="name"
-                                    placeholder="Full name"
-                                    value={form.name}
-                                    onChange={handleChange}
-                                    className="w-full rounded-lg border px-3 py-2"
-                                />
-
-                                <input
-                                    type="email"
-                                    name="email"
-                                    placeholder="Email address"
-                                    value={form.email}
-                                    onChange={handleChange}
-                                    className="w-full rounded-lg border px-3 py-2"
-                                />
-
-                                <input
-                                    type="password"
-                                    name="password"
-                                    placeholder="Password (min 6 chars)"
-                                    value={form.password}
-                                    onChange={handleChange}
-                                    className="w-full rounded-lg border px-3 py-2"
-                                />
-
-                                <input
-                                    name="avatar"
-                                    placeholder="Avatar URL (optional)"
-                                    value={form.avatar}
-                                    onChange={handleChange}
-                                    className="w-full rounded-lg border px-3 py-2"
-                                />
-                            </div>
-
-                            {/* Location */}
-                            <div className="space-y-3">
-                                <h3 className="text-sm font-medium text-slate-700">
-                                    Location & Blood Group
-                                </h3>
-
-                                <select
-                                    name="bloodGroup"
-                                    value={form.bloodGroup}
-                                    onChange={handleChange}
-                                    className="w-full rounded-lg border px-3 py-2"
-                                >
-                                    <option value="">Select blood group</option>
-                                    {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map(
-                                        (bg) => (
-                                            <option key={bg} value={bg}>
-                                                {bg}
-                                            </option>
-                                        )
-                                    )}
-                                </select>
-
-                                <select
-                                    name="district"
-                                    value={form.district}
-                                    onChange={handleChange}
-                                    className="w-full rounded-lg border px-3 py-2"
-                                >
-                                    <option value="">
-                                        {fetchingDistricts
-                                            ? "Loading districts..."
-                                            : "Select district"}
-                                    </option>
-                                    {districts.map((d) => (
-                                        <option key={d.id || d._id} value={d.id || d._id}>
-                                            {d.name}
-                                        </option>
-                                    ))}
-                                </select>
-
-                                <select
-                                    name="upazila"
-                                    value={form.upazila}
-                                    onChange={handleChange}
-                                    className="w-full rounded-lg border px-3 py-2"
-                                >
-                                    <option value="">
-                                        {upazilas.length
-                                            ? "Select upazila"
-                                            : "Choose district first"}
-                                    </option>
-                                    {upazilas.map((u) => (
-                                        <option key={u.id || u._id} value={u.name}>
-                                            {u.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* CTA */}
-                            <div className="flex items-center justify-between pt-4">
-                                <p className="text-sm text-slate-600">
-                                    Already have an account?{" "}
-                                    <Link
-                                        to="/login"
-                                        className="text-blue-600 hover:underline"
-                                    >
-                                        Sign in
-                                    </Link>
-                                </p>
-
-                                <Button loading={loading}>
-                                    Create account
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
+                    <p className="mt-4 text-slate-600">
+                        Join a trusted blood donation network helping people when every
+                        minute matters.
+                    </p>
                 </div>
-            </Card>
+            </div>
+
+            {/* RIGHT FORM */}
+            <div className="flex items-center justify-center px-6">
+                <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-xl p-8">
+
+                    <div className="text-center">
+                        <div className="mx-auto w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center mb-4">
+                            <Droplet size={22} />
+                        </div>
+
+                        <h2 className="text-2xl font-semibold text-slate-900">
+                            Create your account
+                        </h2>
+                        <p className="mt-1 text-sm text-slate-500">
+                            It takes less than a minute
+                        </p>
+                    </div>
+
+                    {error && (
+                        <div className="mt-4 text-sm text-red-600 text-center">
+                            {error}
+                        </div>
+                    )}
+
+                    <form onSubmit={submit} className="mt-6 space-y-4">
+
+                        {/* Inputs */}
+                        {[
+                            { name: "name", placeholder: "Full name" },
+                            { name: "email", placeholder: "Email address", type: "email" },
+                            { name: "password", placeholder: "Password", type: "password" },
+                            { name: "avatar", placeholder: "Avatar URL (optional)" },
+                        ].map((f) => (
+                            <input
+                                key={f.name}
+                                name={f.name}
+                                type={f.type || "text"}
+                                placeholder={f.placeholder}
+                                value={form[f.name]}
+                                onChange={handleChange}
+                                className="w-full rounded-xl border border-slate-300 text-slate-600 px-4 py-2 focus:ring-2 focus:ring-rose-500 focus:outline-none"
+                            />
+                        ))}
+
+                        <select
+                            name="bloodGroup"
+                            value={form.bloodGroup}
+                            onChange={handleChange}
+                            className="w-full rounded-xl border border-slate-300 px-4 py-2 text-slate-600"
+                        >
+                            <option value="">Select blood group</option>
+                            {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map((bg) => (
+                                <option key={bg}>{bg}</option>
+                            ))}
+                        </select>
+
+                        <select
+                            name="district"
+                            value={form.district}
+                            onChange={handleChange}
+                            className="w-full rounded-xl border border-slate-300 px-4 py-2 text-slate-600"
+                        >
+                            <option value="">
+                                {fetchingDistricts ? "Loading districts..." : "Select district"}
+                            </option>
+                            {districts.map((d) => (
+                                <option key={d.id || d._id} value={d.id || d._id}>
+                                    {d.name}
+                                </option>
+                            ))}
+                        </select>
+
+                        <select
+                            name="upazila"
+                            value={form.upazila}
+                            onChange={handleChange}
+                            className="w-full rounded-xl border border-slate-300 px-4 py-2 text-slate-600"
+                        >
+                            <option value="">
+                                {upazilas.length ? "Select upazila" : "Choose district first"}
+                            </option>
+                            {upazilas.map((u) => (
+                                <option key={u.id || u._id}>{u.name}</option>
+                            ))}
+                        </select>
+
+                        <Button loading={loading} className="w-full mt-2">
+                            Create account
+                        </Button>
+                    </form>
+
+                    <p className="mt-6 text-sm text-center text-slate-600">
+                        Already have an account?{" "}
+                        <Link to="/login" className="text-rose-600 font-medium hover:underline">
+                            Sign in
+                        </Link>
+                    </p>
+                </div>
+            </div>
         </div>
     );
 }

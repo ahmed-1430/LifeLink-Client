@@ -1,6 +1,25 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+input::placeholder,
+select::placeholder {
+    color: #0F172A;
+    /* slate-400 */
+}
+
+/* Scroll reveal */
+.reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal-active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+
 @keyframes slide-in {
     from {
         opacity: 0;

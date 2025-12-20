@@ -1,8 +1,8 @@
 import { Outlet, Navigate } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import Sidebar from "../components/dashboard/Sidebar";
-import Topbar from "../components/dashboard/Topbar";
+import Sidebar from "../Component/dashboard/Sidebar";
+import Topbar from "../component/dashboard/Topbar";
 
 export default function DashboardLayout() {
     const { user, logout } = useContext(AuthContext);
