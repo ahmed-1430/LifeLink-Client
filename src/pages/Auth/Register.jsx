@@ -3,12 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import { AuthContext } from "../../context/AuthContext";
 import Button from "../../component/ui/Button";
-import { Droplet } from "lucide-react";
-
-const defaultAvatar = (name) =>
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(
-        name
-    )}&background=E11D48&color=fff&rounded=true`;
+import { Eye, EyeOff, Upload } from "lucide-react";
 
 export default function Register() {
     const navigate = useNavigate();
@@ -18,62 +13,73 @@ export default function Register() {
         name: "",
         email: "",
         password: "",
-        avatar: "",
+        confirm_password: "",
         bloodGroup: "",
         district: "",
         upazila: "",
     });
 
+    const [avatarFile, setAvatarFile] = useState(null);
     const [districts, setDistricts] = useState([]);
     const [upazilas, setUpazilas] = useState([]);
-    const [fetchingDistricts, setFetchingDistricts] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
+
     /* ---------------- Load Districts ---------------- */
     useEffect(() => {
-        const loadDistricts = async () => {
-            try {
-                setFetchingDistricts(true);
-                const res = await API.get("/districts");
-                setDistricts(Array.isArray(res.data) ? res.data : []);
-            } catch {
-                setDistricts([]);
-            } finally {
-                setFetchingDistricts(false);
-            }
-        };
-        loadDistricts();
+        API.get("/districts")
+            .then((res) => setDistricts(res.data || []))
+            .catch(() => setDistricts([]));
     }, []);
 
     /* ---------------- Load Upazilas ---------------- */
     useEffect(() => {
         if (!form.district) return setUpazilas([]);
-        const loadUpazilas = async () => {
-            try {
-                const res = await API.get(`/upazilas/${form.district}`);
-                setUpazilas(Array.isArray(res.data) ? res.data : []);
-            } catch {
-                setUpazilas([]);
-            }
-        };
-        loadUpazilas();
+        API.get(`/upazilas/${form.district}`)
+            .then((res) => setUpazilas(res.data || []))
+            .catch(() => setUpazilas([]));
     }, [form.district]);
 
     const handleChange = (e) =>
-        setForm((s) => ({ ...s, [e.target.name]: e.target.value }));
+        setForm({ ...form, [e.target.name]: e.target.value });
 
+    /* ---------------- Validation ---------------- */
     const validate = () => {
-        if (!form.name) return "Full name is required.";
-        if (!form.email) return "Email is required.";
+        if (!form.name) return "Name is required";
+        if (!form.email) return "Email is required";
         if (form.password.length < 6)
-            return "Password must be at least 6 characters.";
-        if (!form.bloodGroup) return "Select blood group.";
-        if (!form.district) return "Select district.";
-        if (!form.upazila) return "Select upazila.";
+            return "Password must be at least 6 characters";
+        if (form.password !== form.confirm_password)
+            return "Passwords do not match";
+        if (!form.bloodGroup) return "Select blood group";
+        if (!form.district) return "Select district";
+        if (!form.upazila) return "Select upazila";
         return null;
     };
 
+    /* ---------------- Image Upload (imgBB) ---------------- */
+    const uploadAvatar = async () => {
+        if (!avatarFile) return null;
+
+        const formData = new FormData();
+        formData.append("image", avatarFile);
+
+        const res = await fetch(
+            `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_KEY}`,
+            {
+                method: "POST",
+                body: formData,
+            }
+        );
+
+        const data = await res.json();
+        return data?.data?.url || null;
+    };
+
+    /* ---------------- Submit ---------------- */
     const submit = async (e) => {
         e.preventDefault();
         setError("");
@@ -84,20 +90,21 @@ export default function Register() {
         setLoading(true);
 
         try {
+            const avatarUrl = await uploadAvatar();
+
             const payload = {
-                ...form,
-                avatar: form.avatar || defaultAvatar(form.name),
+                name: form.name,
+                email: form.email,
+                password: form.password,
+                avatar: avatarUrl,
+                bloodGroup: form.bloodGroup,
+                district: form.district,
+                upazila: form.upazila,
             };
 
             const res = await API.post("/register", payload);
-            const token = res.data?.token;
-            const user = res.data?.user;
 
-            if (token) {
-                login(token, user);
-                return navigate("/dashboard");
-            }
-
+            // auto login
             const loginRes = await API.post("/login", {
                 email: form.email,
                 password: form.password,
@@ -107,8 +114,7 @@ export default function Register() {
             navigate("/dashboard");
         } catch (err) {
             setError(
-                err.response?.data?.message ||
-                "Registration failed. Please try again."
+                err.response?.data?.message || "Registration failed"
             );
         } finally {
             setLoading(false);
@@ -118,122 +124,151 @@ export default function Register() {
     return (
         <div className="min-h-screen grid md:grid-cols-2 bg-[#F8FAFC]">
 
-            {/* LEFT BRAND */}
+            {/* LEFT */}
             <div className="hidden md:flex flex-col justify-center px-16 bg-linear-to-br from-rose-50 via-white to-blue-50">
-                <div className="max-w-md">
-                    <div className="flex items-center gap-2 mb-6">
-                        <span className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center font-bold">
-                            L
-                        </span>
-                        <span className="text-xl font-bold text-slate-900">LifeLink</span>
-                    </div>
-
-                    <h1 className="text-3xl font-bold text-slate-900">
-                        Become a donor.
-                        <br />
-                        Save lives today.
-                    </h1>
-
-                    <p className="mt-4 text-slate-600">
-                        Join a trusted blood donation network helping people when every
-                        minute matters.
-                    </p>
-                </div>
+                <h1 className="text-3xl font-bold text-slate-900">
+                    Create your LifeLink account
+                </h1>
+                <p className="mt-4 text-slate-600">
+                    Join as a donor and help save lives across the country.
+                </p>
             </div>
 
-            {/* RIGHT FORM */}
+            {/* RIGHT */}
             <div className="flex items-center justify-center px-6">
-                <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-xl p-8">
+                <div className="w-full max-w-md bg-white border rounded-2xl shadow-xl p-8">
 
-                    <div className="text-center">
-                        <div className="mx-auto w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center mb-4">
-                            <Droplet size={22} />
-                        </div>
-
-                        <h2 className="text-2xl font-semibold text-slate-900">
-                            Create your account
-                        </h2>
-                        <p className="mt-1 text-sm text-slate-500">
-                            It takes less than a minute
-                        </p>
-                    </div>
+                    <h2 className="text-2xl text-rose-500 font-semibold text-center mb-1">
+                        Sign up
+                    </h2>
+                    <p className="text-sm text-slate-500 text-center mb-4">
+                        Create your account
+                    </p>
 
                     {error && (
-                        <div className="mt-4 text-sm text-red-600 text-center">
+                        <div className="text-sm text-red-600 text-center mb-3">
                             {error}
                         </div>
                     )}
 
-                    <form onSubmit={submit} className="mt-6 space-y-4">
+                    <form onSubmit={submit} className="space-y-4">
 
-                        {/* Inputs */}
-                        {[
-                            { name: "name", placeholder: "Full name" },
-                            { name: "email", placeholder: "Email address", type: "email" },
-                            { name: "password", placeholder: "Password", type: "password" },
-                            { name: "avatar", placeholder: "Avatar URL (optional)" },
-                        ].map((f) => (
+                        <input
+                            name="name"
+                            placeholder="Full name"
+                            className="w-full input bg-white text-slate-500 border-2 border-slate-500/30"
+                            value={form.name}
+                            onChange={handleChange}
+                        />
+
+                        <input
+                            name="email"
+                            type="email"
+                            placeholder="Email"
+                            className="w-full input bg-white text-slate-500 border-2 border-slate-500/30"
+                            value={form.email}
+                            onChange={handleChange}
+                        />
+
+                        {/* Avatar */}
+                        <label className="flex items-center gap-2 text-sm cursor-pointer text-rose-500">
+                            <Upload size={16} />
+                            Upload avatar
                             <input
-                                key={f.name}
-                                name={f.name}
-                                type={f.type || "text"}
-                                placeholder={f.placeholder}
-                                value={form[f.name]}
-                                onChange={handleChange}
-                                className="w-full rounded-xl border border-slate-300 text-slate-600 px-4 py-2 focus:ring-2 focus:ring-rose-500 focus:outline-none"
+                                type="file"
+                                accept="image/*"
+                                hidden
+                                onChange={(e) => setAvatarFile(e.target.files[0])}
                             />
-                        ))}
+                        </label>
 
+                        {/* Password */}
+                        <div className="relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                name="password"
+                                placeholder="Password"
+                                className="w-full input pr-10 bg-white text-slate-500 border-2 border-slate-500/30"
+                                value={form.password}
+                                onChange={handleChange}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-2.5 text-slate-500"
+                            >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
+
+                        {/* Confirm Password */}
+                        <div className="relative">
+                            <input
+                                type={showConfirm ? "text" : "password"}
+                                name="confirm_password"
+                                placeholder="Confirm password"
+                                className="w-full input pr-10 bg-white text-slate-500 border-2 border-slate-500/30"
+                                value={form.confirm_password}
+                                onChange={handleChange}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirm(!showConfirm)}
+                                className="absolute right-3 top-2.5 text-slate-500"
+                            >
+                                {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
+
+                        {/* Blood group */}
                         <select
                             name="bloodGroup"
+                            className="w-full input bg-white text-slate-500 border-2 border-slate-500/30 cursor-pointer"
                             value={form.bloodGroup}
                             onChange={handleChange}
-                            className="w-full rounded-xl border border-slate-300 px-4 py-2 text-slate-600"
                         >
                             <option value="">Select blood group</option>
-                            {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map((bg) => (
+                            {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((bg) => (
                                 <option key={bg}>{bg}</option>
                             ))}
                         </select>
 
+                        {/* District */}
                         <select
                             name="district"
+                            className="w-full input bg-white text-slate-500 border-2 border-slate-500/30 cursor-pointer"
                             value={form.district}
                             onChange={handleChange}
-                            className="w-full rounded-xl border border-slate-300 px-4 py-2 text-slate-600"
                         >
-                            <option value="">
-                                {fetchingDistricts ? "Loading districts..." : "Select district"}
-                            </option>
+                            <option value="">Select district</option>
                             {districts.map((d) => (
-                                <option key={d.id || d._id} value={d.id || d._id}>
+                                <option key={d._id} value={d._id}>
                                     {d.name}
                                 </option>
                             ))}
                         </select>
 
+                        {/* Upazila */}
                         <select
                             name="upazila"
+                            className="w-full input bg-white text-slate-500 border-2 border-slate-500/30 cursor-pointer"
                             value={form.upazila}
                             onChange={handleChange}
-                            className="w-full rounded-xl border border-slate-300 px-4 py-2 text-slate-600"
                         >
-                            <option value="">
-                                {upazilas.length ? "Select upazila" : "Choose district first"}
-                            </option>
+                            <option value="">Select upazila</option>
                             {upazilas.map((u) => (
-                                <option key={u.id || u._id}>{u.name}</option>
+                                <option key={u._id}>{u.name}</option>
                             ))}
                         </select>
 
-                        <Button loading={loading} className="w-full mt-2">
+                        <Button loading={loading} className="w-full">
                             Create account
                         </Button>
                     </form>
 
-                    <p className="mt-6 text-sm text-center text-slate-600">
+                    <p className="text-sm text-center mt-4 text-slate-600">
                         Already have an account?{" "}
-                        <Link to="/login" className="text-rose-600 font-medium hover:underline">
+                        <Link to="/login" className="text-rose-600 font-medium">
                             Sign in
                         </Link>
                     </p>

@@ -19,6 +19,13 @@ select::placeholder {
     transform: translateY(0);
 }
 
+.input {
+    @apply w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-900 placeholder-slate-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-rose-500/60 focus:border-rose-500 transition;
+}
+
+.card {
+    @apply bg-white rounded-3xl border border-slate-200 shadow-xl;
+}
 
 @keyframes slide-in {
     from {
