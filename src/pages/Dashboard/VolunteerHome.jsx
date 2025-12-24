@@ -5,91 +5,101 @@ import { toast } from "../../Component/toast";
 const VolunteerHome = () => {
     const [loading, setLoading] = useState(true);
     const [requests, setRequests] = useState([]);
-    const [stats, setStats] = useState({ pending: 0, active: 0, completed: 0 });
-    const [actionLoading, setActionLoading] = useState(null); // id of request being processed
+    const [stats, setStats] = useState({
+        pending: 0,
+        accepted: 0,
+        completed: 0,
+    });
+    const [actionLoading, setActionLoading] = useState(null);
 
+    /* ---------------- Load volunteer requests ---------------- */
     useEffect(() => {
+        let cancelled = false;
+
         const load = async () => {
             try {
                 setLoading(true);
-                const res = await API.get("/requests");
-                const all = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+
+                // ✅ CORRECT API
+                const res = await API.get("/volunteer/requests");
+                const all = Array.isArray(res.data) ? res.data : [];
+
+                if (cancelled) return;
+
                 setRequests(all);
+
                 setStats({
-                    pending: all.filter((r) => r.status === "pending").length,
-                    active: all.filter((r) => r.status === "accepted").length,
-                    completed: all.filter((r) => r.status === "completed").length,
+                    pending: all.filter((r) => r.donationStatus === "pending").length,
+                    accepted: all.filter((r) => r.donationStatus === "accepted").length,
+                    completed: all.filter((r) => r.donationStatus === "completed").length,
                 });
             } catch (err) {
-                console.error("Failed to load volunteer data:", err);
+                console.error("Volunteer load error:", err);
+                toast.error("Failed to load donation requests");
             } finally {
-                setLoading(false);
+                if (!cancelled) setLoading(false);
             }
         };
 
         load();
+        return () => (cancelled = true);
     }, []);
 
-    const acceptRequest = async (reqId) => {
-        if (!window.confirm("Accept this request and volunteer to help?")) return;
+    /* ---------------- Accept request ---------------- */
+    const acceptRequest = async (id) => {
+        if (!window.confirm("Accept this donation request?")) return;
 
-        setActionLoading(reqId);
-        // optimistic update
-        const old = [...requests];
-        setRequests((prev) => prev.map((r) => (r._id === reqId ? { ...r, status: "accepted" } : r)));
+        setActionLoading(id);
 
         try {
-            const res = await API.post(`/requests/${reqId}/accept`);
-            const updated = res.data?.request || res.data;
-            // replace in list with server response (if returned)
-            setRequests((prev) => prev.map((r) => (r._id === reqId ? updated : r)));
-            // update stats
+            await API.patch(`/donation/${id}/accept`);
+
+            setRequests((prev) =>
+                prev.map((r) =>
+                    r._id === id ? { ...r, donationStatus: "accepted" } : r
+                )
+            );
+
             setStats((s) => ({
                 ...s,
-                pending: Math.max(0, s.pending - 1),
-                active: s.active + 1,
+                pending: s.pending - 1,
+                accepted: s.accepted + 1,
             }));
-            toast.success("Request accepted — thank you!");
+
+            toast.success("Request accepted successfully");
         } catch (err) {
             console.error("Accept failed:", err);
-            toast.error(err.response?.data?.message || "Failed to accept request");
-            // rollback
-            setRequests(old);
+            toast.error(err.response?.data?.message || "Accept failed");
         } finally {
             setActionLoading(null);
         }
     };
 
     if (loading) {
-        return <div className="text-center py-10 text-slate-500">Loading volunteer data...</div>;
+        return (
+            <div className="text-center py-16 text-slate-500">
+                Loading volunteer dashboard…
+            </div>
+        );
     }
 
     return (
-        <div className="space-y-8">
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div className="bg-white p-6 rounded-xl shadow border">
-                    <h3 className="text-sm text-slate-500 mb-1">Pending Requests</h3>
-                    <p className="text-3xl font-semibold text-blue-600">{stats.pending}</p>
-                </div>
-
-                <div className="bg-white p-6 rounded-xl shadow border">
-                    <h3 className="text-sm text-slate-500 mb-1">Active Missions</h3>
-                    <p className="text-3xl font-semibold text-orange-500">{stats.active}</p>
-                </div>
-
-                <div className="bg-white p-6 rounded-xl shadow border">
-                    <h3 className="text-sm text-slate-500 mb-1">Completed</h3>
-                    <p className="text-3xl font-semibold text-emerald-500">{stats.completed}</p>
-                </div>
+        <div className="space-y-10">
+            {/* STATS */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Stat label="Pending Requests" value={stats.pending} color="blue" />
+                <Stat label="Accepted" value={stats.accepted} color="orange" />
+                <Stat label="Completed" value={stats.completed} color="green" />
             </div>
 
-            {/* List of Requests */}
-            <div className="bg-white p-6 rounded-xl shadow border">
-                <h2 className="text-xl font-semibold mb-4">Available Donation Requests</h2>
+            {/* REQUEST LIST */}
+            <div className="bg-white border rounded-xl shadow-sm p-6">
+                <h2 className="text-xl font-semibold mb-4">
+                    Available Donation Requests
+                </h2>
 
                 {requests.length === 0 ? (
-                    <p className="text-slate-500">No requests available.</p>
+                    <p className="text-slate-500">No donation requests available.</p>
                 ) : (
                     <div className="space-y-4">
                         {requests.map((req) => (
@@ -98,31 +108,40 @@ const VolunteerHome = () => {
                                 className="border rounded-lg p-4 flex flex-col md:flex-row md:items-center justify-between bg-slate-50 hover:bg-slate-100 transition"
                             >
                                 <div>
-                                    <p className="font-medium text-slate-800">
-                                        {req.patientName} — {req.bloodGroup}
+                                    <p className="font-medium text-slate-900">
+                                        {req.recipientName} • {req.bloodGroup}
                                     </p>
                                     <p className="text-sm text-slate-500">
-                                        {req.district}, {req.upazila}
+                                        {req.recipientDistrict}, {req.recipientUpazila}
+                                    </p>
+                                    <p className="text-xs text-slate-400">
+                                        {req.hospitalName}
                                     </p>
                                 </div>
 
-                                <div className="mt-3 md:mt-0 flex items-center gap-3">
-                                    {req.status === "pending" && (
+                                <div className="mt-3 md:mt-0">
+                                    {req.donationStatus === "pending" && (
                                         <button
                                             onClick={() => acceptRequest(req._id)}
                                             disabled={actionLoading === req._id}
                                             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-60"
                                         >
-                                            {actionLoading === req._id ? "Accepting..." : "Accept Request"}
+                                            {actionLoading === req._id
+                                                ? "Accepting..."
+                                                : "Accept"}
                                         </button>
                                     )}
 
-                                    {req.status === "accepted" && (
-                                        <span className="px-3 py-1 rounded-md bg-orange-100 text-orange-700">Accepted</span>
+                                    {req.donationStatus === "accepted" && (
+                                        <span className="px-3 py-1 rounded-md bg-orange-100 text-orange-700 text-sm">
+                                            Accepted
+                                        </span>
                                     )}
 
-                                    {req.status === "completed" && (
-                                        <span className="px-3 py-1 rounded-md bg-green-100 text-green-700">Completed</span>
+                                    {req.donationStatus === "completed" && (
+                                        <span className="px-3 py-1 rounded-md bg-green-100 text-green-700 text-sm">
+                                            Completed
+                                        </span>
                                     )}
                                 </div>
                             </div>
@@ -133,5 +152,13 @@ const VolunteerHome = () => {
         </div>
     );
 };
+
+/* ---------------- Small Stat Component ---------------- */
+const Stat = ({ label, value, color }) => (
+    <div className="bg-white border rounded-xl p-6 shadow-sm">
+        <p className="text-sm text-slate-500 mb-1">{label}</p>
+        <p className={`text-3xl font-semibold text-${color}-600`}>{value}</p>
+    </div>
+);
 
 export default VolunteerHome;
