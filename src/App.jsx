@@ -10,6 +10,7 @@ import Register from "./pages/Auth/Register";
 import DashboardLayout from "./layouts/DashboardLayout";
 import VolunteerHome from "./pages/Dashboard/VolunteerHome";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
+import AllRequests from "./pages/Dashboard/AllRequests";
 
 
 
@@ -34,6 +35,10 @@ const router = createBrowserRouter([
           { index: true, element: <DonorHome /> },
           { path: "requests", element: <MyRequests /> },
           { path: "create", element: <CreateRequest /> },
+          {
+            path: "/dashboard/all-requests",
+            element: <AllRequests />
+          }
         ],
       },
     ],
@@ -56,7 +61,7 @@ const router = createBrowserRouter([
         path: "/volunteer",
         element: <DashboardLayout />,
         children: [
-          { index: true, element: <VolunteerHome /> },          
+          { index: true, element: <VolunteerHome /> },
 
         ],
       },

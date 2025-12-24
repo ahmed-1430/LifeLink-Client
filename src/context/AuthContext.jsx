@@ -59,6 +59,8 @@ export const AuthProvider = ({ children }) => {
                 email: decoded.email,
                 role: decoded.role,
                 userId: decoded.userId,
+                name: decoded.name,
+                avatar: decoded.avatar,
             });
         }
     };

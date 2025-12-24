@@ -92,7 +92,7 @@ export default function Sidebar({ role, onClose }) {
                         </NavLink>
 
                         <NavLink
-                            to="/dashboard/create-donation-request"
+                            to="/dashboard/create"
                             className={({ isActive }) =>
                                 `${baseItem} ${isActive
                                     ? "bg-rose-50 text-rose-600"

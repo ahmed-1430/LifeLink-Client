@@ -15,6 +15,7 @@ export default function CreateDonationRequest() {
   const [form, setForm] = useState({
     recipientName: "",
     district: "",
+    districtName: "",
     upazila: "",
     hospital: "",
     address: "",
@@ -23,6 +24,7 @@ export default function CreateDonationRequest() {
     donationTime: "",
     message: "",
   });
+
 
   /* ---------------- Fetch districts ---------------- */
   useEffect(() => {
@@ -58,18 +60,15 @@ export default function CreateDonationRequest() {
 
     try {
       await API.post("/donation", {
-        requesterName: user.name,
-        requesterEmail: user.email,
         recipientName: form.recipientName,
-        district: form.district,
-        upazila: form.upazila,
-        hospital: form.hospital,
-        address: form.address,
+        recipientDistrict: form.districtName, 
+        recipientUpazila: form.upazila,       
+        hospitalName: form.hospital,
+        fullAddress: form.address,
         bloodGroup: form.bloodGroup,
         donationDate: form.donationDate,
         donationTime: form.donationTime,
-        message: form.message,
-        status: "pending",
+        requestMessage: form.message,
       });
 
       navigate("/dashboard/requests");
@@ -137,19 +136,25 @@ export default function CreateDonationRequest() {
               Recipient District
             </label>
             <select
-              name="district"
               value={form.district}
-              onChange={handleChange}
-              required
-              className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-rose-400 text-slate-600 cursor-pointer"
+              onChange={(e) => {
+                const selected = districts.find(d => d.id === e.target.value);
+                setForm({
+                  ...form,
+                  district: selected.id,
+                  districtName: selected.name,
+                });
+              }}
+              className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-700 cursor-pointer"
             >
               <option value="">Select district</option>
-              {districts.map((d) => (
+              {districts.map(d => (
                 <option key={d.id} value={d.id}>
                   {d.name}
                 </option>
               ))}
             </select>
+
           </div>
 
           <div>
@@ -214,7 +219,7 @@ export default function CreateDonationRequest() {
               className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-rose-400 text-slate-600 cursor-pointer"
             >
               <option value="">Select</option>
-              {["A+","A-","B+","B-","AB+","AB-","O+","O-"].map(bg => (
+              {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(bg => (
                 <option key={bg}>{bg}</option>
               ))}
             </select>

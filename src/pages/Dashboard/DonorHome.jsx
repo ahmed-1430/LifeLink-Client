@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import API from "../../api/axios";
 import { AuthContext } from "../../context/AuthContext";
 import StatCard from "../../Component/StatCard";
+import Spinner from "../../Component/ui/Spinner";
 
 const DonorHome = () => {
     const { user } = useContext(AuthContext);
@@ -75,9 +76,7 @@ const DonorHome = () => {
     /* ---------------- Loading ---------------- */
     if (loading) {
         return (
-            <div className="py-24 text-center text-slate-500">
-                Loading dashboard...
-            </div>
+            <Spinner/>
         );
     }
 
