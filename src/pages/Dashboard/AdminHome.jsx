@@ -1,8 +1,8 @@
 /* eslint-disable no-empty */
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import API from "../../api/axios";
 
-const AdminHome = () => {
+export default function AdminHome() {
     const [stats, setStats] = useState({
         totalUsers: 0,
         totalRequests: 0,
@@ -19,18 +19,24 @@ const AdminHome = () => {
 
         const loadAdminStats = async () => {
             try {
-                // Fetch all users
-                const usersRes = await API.get("/admin/users");
+                setLoading(true);
 
-                // Fetch all requests
-                const reqRes = await API.get("/admin/requests");
+                /* ✅ CORRECT APIs */
+                const usersRes = await API.get("/users");
+                const reqRes = await API.get("/requests");
 
-                const allReq = reqRes.data || [];
+                const users = Array.isArray(usersRes.data) ? usersRes.data : [];
+                const requests = Array.isArray(reqRes.data) ? reqRes.data : [];
 
-                const pending = allReq.filter((r) => r.status === "pending").length;
-                const completed = allReq.filter((r) => r.status === "completed").length;
+                const pending = requests.filter(
+                    (r) => r.donationStatus == "pending"
+                ).length;
 
-                // Funding endpoint (optional)
+                const completed = requests.filter(
+                    (r) => r.donationStatus == "completed"
+                ).length;
+
+                /* Optional funding (challenge requirement) */
                 let fundingTotal = 0;
                 try {
                     const fundRes = await API.get("/funding/all");
@@ -39,14 +45,14 @@ const AdminHome = () => {
 
                 if (!cancelled) {
                     setStats({
-                        totalUsers: usersRes.data?.length || 0,
-                        totalRequests: allReq.length,
+                        totalUsers: users.length,
+                        totalRequests: requests.length,
                         pendingRequests: pending,
                         completedRequests: completed,
                         totalFunding: fundingTotal,
                     });
 
-                    setRecent(allReq.slice(0, 5)); // latest 5
+                    setRecent(requests.slice(0, 5));
                 }
             } catch (err) {
                 console.error("Admin dashboard load error:", err);
@@ -59,98 +65,90 @@ const AdminHome = () => {
         return () => (cancelled = true);
     }, []);
 
-    const statusColor = (s) => {
-        if (s === "pending") return "bg-orange-100 text-orange-700";
-        if (s === "approved") return "bg-blue-100 text-blue-700";
-        if (s === "completed") return "bg-green-100 text-green-700";
-        return "bg-slate-100 text-slate-700";
+    const statusColor = (status) => {
+        switch (status) {
+            case "pending":
+                return "bg-orange-100 text-orange-700";
+            case "approved":
+                return "bg-blue-100 text-blue-700";
+            case "completed":
+                return "bg-green-100 text-green-700";
+            default:
+                return "bg-slate-100 text-slate-700";
+        }
     };
 
-    if (loading)
-        return <div className="text-center py-16 text-slate-500">Loading admin panel...</div>;
+    if (loading) {
+        return (
+            <div className="text-center py-20 text-slate-500">
+                Loading admin dashboard…
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-10">
-            <h1 className="text-2xl font-semibold">Admin Dashboard</h1>
 
-            {/* STATS GRID */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            {/* WELCOME */}
+            <div>
+                <h1 className="text-2xl font-semibold text-slate-900">
+                    Welcome back, Admin 👋
+                </h1>
+                <p className="text-sm text-slate-500">
+                    Overview of platform activity and donation requests
+                </p>
+            </div>
 
-                <AdminStatCard
-                    label="Total Users"
-                    count={stats.totalUsers}
-                    icon="👥"
-                    color="text-blue-600"
-                />
-
-                <AdminStatCard
-                    label="Total Requests"
-                    count={stats.totalRequests}
-                    icon="📑"
-                    color="text-purple-600"
-                />
-
-                <AdminStatCard
-                    label="Pending Requests"
-                    count={stats.pendingRequests}
-                    icon="⏳"
-                    color="text-orange-600"
-                />
-
-                <AdminStatCard
-                    label="Completed Requests"
-                    count={stats.completedRequests}
-                    icon="✅"
-                    color="text-green-600"
-                />
-
-                <AdminStatCard
-                    label="Funding Collected"
-                    count={"৳" + stats.totalFunding}
-                    icon="💰"
-                    color="text-red-600"
-                />
+            {/* STATS */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                <Stat label="Total Users" value={stats.totalUsers} icon="👥" />
+                <Stat label="Total Requests" value={stats.totalRequests} icon="📑" />
+                <Stat label="Pending" value={stats.pendingRequests} icon="⏳" />
+                <Stat label="Completed" value={stats.completedRequests} icon="✅" />
+                <Stat label="Funding" value={`৳ ${stats.totalFunding}`} icon="💰" />
             </div>
 
             {/* RECENT REQUESTS */}
             <div className="bg-white border rounded-xl shadow-sm p-6">
-                <h2 className="text-xl font-semibold mb-4">Recent Requests</h2>
+                <h2 className="text-xl font-semibold mb-4">
+                    Recent Donation Requests
+                </h2>
 
                 {recent.length === 0 ? (
-                    <p className="text-slate-500 text-sm">No requests found.</p>
+                    <p className="text-sm text-slate-500">No requests found.</p>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-slate-50 border-b">
-                                    <th className="py-3 px-4 text-sm font-medium text-slate-600">Patient</th>
-                                    <th className="py-3 px-4 text-sm font-medium text-slate-600">Blood</th>
-                                    <th className="py-3 px-4 text-sm font-medium text-slate-600">Location</th>
-                                    <th className="py-3 px-4 text-sm font-medium text-slate-600">Status</th>
+                        <table className="w-full text-sm">
+                            <thead className="bg-slate-50 text-slate-600">
+                                <tr>
+                                    <th className="px-4 py-3 text-left">Recipient</th>
+                                    <th className="px-4 py-3 text-left">Blood</th>
+                                    <th className="px-4 py-3 text-left">Location</th>
+                                    <th className="px-4 py-3 text-left">Status</th>
                                 </tr>
                             </thead>
-
                             <tbody>
                                 {recent.map((r) => (
-                                    <tr key={r._id} className="border-b hover:bg-slate-50 transition">
-                                        <td className="py-3 px-4">{r.patientName}</td>
-                                        <td className="py-3 px-4 font-medium">{r.bloodGroup}</td>
-                                        <td className="py-3 px-4 text-sm text-slate-600">
-                                            {r.district}, {r.upazila}
+                                    <tr key={r._id} className="border-t hover:bg-slate-50">
+                                        <td className="px-4 py-3 font-medium">
+                                            {r.recipientName}
                                         </td>
-                                        <td className="py-3 px-4">
+                                        <td className="px-4 py-3">{r.bloodGroup}</td>
+                                        <td className="px-4 py-3 text-slate-600">
+                                            {r.recipientDistrict}, {r.recipientUpazila}
+                                        </td>
+                                        <td className="px-4 py-3">
                                             <span
-                                                className={`px-3 py-1 rounded-md text-sm font-medium ${statusColor(
-                                                    r.status
+                                                className={`px-3 py-1 rounded-full text-xs font-medium ${statusColor(
+                                                    r.donationStatus
                                                 )}`}
                                             >
-                                                {r.status}
+                                                {r.donationStatus}
                                             </span>
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
-
                         </table>
                     </div>
                 )}
@@ -158,4 +156,14 @@ const AdminHome = () => {
         </div>
     );
 }
-export default AdminHome;
+
+/* STAT CARD */
+function Stat({ label, value, icon }) {
+    return (
+        <div className="bg-white border rounded-xl p-6 shadow-sm">
+            <div className="text-2xl mb-2">{icon}</div>
+            <p className="text-sm text-slate-500">{label}</p>
+            <p className="text-2xl font-semibold text-slate-900">{value}</p>
+        </div>
+    );
+}
