@@ -132,7 +132,7 @@ export default function AllRequests() {
 
                     <tbody>
                         {filtered.map((r) => (
-                            <tr key={r._id} className="border-t">
+                            <tr key={r._id} className="border-t text-slate-500">
                                 <td className="px-4 py-3">{r.recipientName}</td>
                                 <td className="px-4 py-3">{r.bloodGroup}</td>
                                 <td className="px-4 py-3">
