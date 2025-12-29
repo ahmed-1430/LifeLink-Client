@@ -5,14 +5,23 @@ import {
     PlusCircle,
     List,
     Users,
+    DollarSign,
+    User,
     X,
 } from "lucide-react";
-import Badge from "../ui/Badge";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
 
 const navItem =
     "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition";
 
-export default function Sidebar({ role, isOpen, onClose }) {
+export default function Sidebar({ isOpen, onClose }) {
+    const { user } = useContext(AuthContext);
+
+    if (!user) return null;
+
+    const role = user.role;
+
     return (
         <aside
             className={`
@@ -39,7 +48,7 @@ export default function Sidebar({ role, isOpen, onClose }) {
 
             {/* NAV */}
             <nav className="flex-1 px-4 py-6 space-y-8 overflow-y-auto">
-                {/* MAIN */}
+                {/* COMMON */}
                 <div className="space-y-1">
                     <p className="px-3 text-xs font-semibold text-slate-400 uppercase">
                         Main
@@ -65,11 +74,25 @@ export default function Sidebar({ role, isOpen, onClose }) {
                 {role === "donor" && (
                     <div className="space-y-1">
                         <p className="px-3 text-xs font-semibold text-slate-400 uppercase">
-                            Donation
+                            Donor
                         </p>
 
                         <NavLink
-                            to="/dashboard/requests"
+                            to="/dashboard/create-donation-request"
+                            onClick={onClose}
+                            className={({ isActive }) =>
+                                `${navItem} ${isActive
+                                    ? "bg-rose-50 text-rose-600"
+                                    : "text-slate-600 hover:bg-slate-100"
+                                }`
+                            }
+                        >
+                            <PlusCircle size={18} />
+                            Create Request
+                        </NavLink>
+
+                        <NavLink
+                            to="/dashboard/my-donation-requests"
                             onClick={onClose}
                             className={({ isActive }) =>
                                 `${navItem} ${isActive
@@ -83,7 +106,7 @@ export default function Sidebar({ role, isOpen, onClose }) {
                         </NavLink>
 
                         <NavLink
-                            to="/dashboard/all-requests"
+                            to="/dashboard/profile"
                             onClick={onClose}
                             className={({ isActive }) =>
                                 `${navItem} ${isActive
@@ -92,22 +115,8 @@ export default function Sidebar({ role, isOpen, onClose }) {
                                 }`
                             }
                         >
-                            <List size={18} />
-                            All Requests
-                        </NavLink>
-
-                        <NavLink
-                            to="/dashboard/create"
-                            onClick={onClose}
-                            className={({ isActive }) =>
-                                `${navItem} ${isActive
-                                    ? "bg-rose-50 text-rose-600"
-                                    : "text-slate-600 hover:bg-slate-100"
-                                }`
-                            }
-                        >
-                            <PlusCircle size={18} />
-                            Create Request
+                            <User size={18} />
+                            Profile
                         </NavLink>
                     </div>
                 )}
@@ -120,7 +129,7 @@ export default function Sidebar({ role, isOpen, onClose }) {
                         </p>
 
                         <NavLink
-                            to="/dashboard/all-requests"
+                            to="/dashboard/all-blood-donation-request"
                             onClick={onClose}
                             className={({ isActive }) =>
                                 `${navItem} ${isActive
@@ -143,7 +152,7 @@ export default function Sidebar({ role, isOpen, onClose }) {
                         </p>
 
                         <NavLink
-                            to="/admin"
+                            to="/dashboard/all-users"
                             onClick={onClose}
                             className={({ isActive }) =>
                                 `${navItem} ${isActive
@@ -153,8 +162,35 @@ export default function Sidebar({ role, isOpen, onClose }) {
                             }
                         >
                             <Users size={18} />
-                            Users
-                            <Badge color="rose">Admin</Badge>
+                            All Users
+                        </NavLink>
+
+                        <NavLink
+                            to="/dashboard/all-blood-donation-request"
+                            onClick={onClose}
+                            className={({ isActive }) =>
+                                `${navItem} ${isActive
+                                    ? "bg-rose-50 text-rose-600"
+                                    : "text-slate-600 hover:bg-slate-100"
+                                }`
+                            }
+                        >
+                            <List size={18} />
+                            All Requests
+                        </NavLink>
+
+                        <NavLink
+                            to="/dashboard/funding"
+                            onClick={onClose}
+                            className={({ isActive }) =>
+                                `${navItem} ${isActive
+                                    ? "bg-rose-50 text-rose-600"
+                                    : "text-slate-600 hover:bg-slate-100"
+                                }`
+                            }
+                        >
+                            <DollarSign size={18} />
+                            Funding
                         </NavLink>
                     </div>
                 )}
