@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import { AuthContext } from "../../context/AuthContext";
@@ -14,64 +14,71 @@ export default function CreateDonationRequest() {
 
   const [form, setForm] = useState({
     recipientName: "",
-    district: "",
-    districtName: "",
-    upazila: "",
-    hospital: "",
-    address: "",
+    recipientDistrictId: "",
+    recipientDistrict: "",
+    recipientUpazila: "",
+    hospitalName: "",
+    fullAddress: "",
     bloodGroup: "",
     donationDate: "",
     donationTime: "",
-    message: "",
+    requestMessage: "",
   });
 
 
-  /* ---------------- Fetch districts ---------------- */
+  //  FETCH DISTRICTS
+
   useEffect(() => {
-    API.get("/districts")
+    API.get("/geo/districts")
       .then((res) => setDistricts(res.data || []))
       .catch(() => setDistricts([]));
   }, []);
 
-  /* ---------------- Fetch upazilas ---------------- */
+
+  //  FETCH UPAZILAS
+
   useEffect(() => {
-    if (!form.district) {
+    if (!form.recipientDistrictId) {
       setUpazilas([]);
       return;
     }
 
-    API.get(`/upazilas/${form.district}`)
+    API.get(`/geo/upazilas/${form.recipientDistrictId}`)
       .then((res) => setUpazilas(res.data || []))
       .catch(() => setUpazilas([]));
-  }, [form.district]);
+  }, [form.recipientDistrictId]);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
+
+
+  //  SUBMIT
 
   const submit = async (e) => {
     e.preventDefault();
     setError("");
 
     if (user?.status === "blocked") {
-      return setError("Blocked users cannot create donation requests.");
+      setError("Blocked users cannot create donation requests.");
+      return;
     }
 
     setLoading(true);
 
     try {
-      await API.post("/donation", {
+      await API.post("/donations", {
         recipientName: form.recipientName,
-        recipientDistrict: form.districtName, 
-        recipientUpazila: form.upazila,       
-        hospitalName: form.hospital,
-        fullAddress: form.address,
+        recipientDistrict: form.recipientDistrict,
+        recipientUpazila: form.recipientUpazila,
+        hospitalName: form.hospitalName,
+        fullAddress: form.fullAddress,
         bloodGroup: form.bloodGroup,
         donationDate: form.donationDate,
         donationTime: form.donationTime,
-        requestMessage: form.message,
+        requestMessage: form.requestMessage,
       });
 
-      navigate("/dashboard/requests");
+      navigate("/dashboard/my-donation-requests");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to create request");
     } finally {
@@ -98,7 +105,7 @@ export default function CreateDonationRequest() {
             <input
               readOnly
               value={user?.name || ""}
-              className="w-full rounded-xl bg-slate-100 px-4 py-2.5 text-sm text-slate-700"
+              className="w-full rounded-xl bg-slate-100 px-4 py-2.5 text-sm"
             />
           </div>
 
@@ -109,68 +116,71 @@ export default function CreateDonationRequest() {
             <input
               readOnly
               value={user?.email || ""}
-              className="w-full rounded-xl bg-slate-100 px-4 py-2.5 text-sm text-slate-700"
+              className="w-full rounded-xl bg-slate-100 px-4 py-2.5 text-sm"
             />
           </div>
         </div>
 
-        {/* RECIPIENT */}
+        {/* RECIPIENT NAME */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label className="block text-sm font-medium mb-1">
             Recipient Name
           </label>
           <input
             name="recipientName"
             value={form.recipientName}
             onChange={handleChange}
-            placeholder="Recipient full name"
             required
-            className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 text-slate-600"
+            className="w-full rounded-xl border px-4 py-2.5"
           />
         </div>
 
         {/* LOCATION */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium mb-1">
               Recipient District
             </label>
             <select
-              value={form.district}
+              value={form.recipientDistrictId}
               onChange={(e) => {
-                const selected = districts.find(d => d.id === e.target.value);
+                const selected = districts.find(
+                  (d) => d.id === e.target.value
+                );
                 setForm({
                   ...form,
-                  district: selected.id,
-                  districtName: selected.name,
+                  recipientDistrictId: selected?.id || "",
+                  recipientDistrict: selected?.name || "",
                 });
               }}
-              className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-700 cursor-pointer"
+              required
+              className="w-full rounded-xl border px-4 py-2.5"
             >
               <option value="">Select district</option>
-              {districts.map(d => (
+              {districts.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.name}
                 </option>
               ))}
             </select>
-
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium mb-1">
               Recipient Upazila
             </label>
             <select
-              name="upazila"
-              value={form.upazila}
+              name="recipientUpazila"
+              value={form.recipientUpazila}
               onChange={handleChange}
               required
-              className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-rose-400 text-slate-600 cursor-pointer"
+              className="w-full rounded-xl border px-4 py-2.5"
             >
               <option value="">Select upazila</option>
               {upazilas.map((u) => (
-                <option key={u.id}>{u.name}</option>
+                <option key={u.id} value={u.name}>
+                  {u.name}
+                </option>
               ))}
             </select>
           </div>
@@ -178,97 +188,74 @@ export default function CreateDonationRequest() {
 
         {/* HOSPITAL */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label className="block text-sm font-medium mb-1">
             Hospital Name
           </label>
           <input
-            name="hospital"
-            value={form.hospital}
+            name="hospitalName"
+            value={form.hospitalName}
             onChange={handleChange}
-            placeholder="Dhaka Medical College Hospital"
             required
-            className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-rose-400 text-slate-600"
+            className="w-full rounded-xl border px-4 py-2.5"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label className="block text-sm font-medium mb-1">
             Full Address
           </label>
           <input
-            name="address"
-            value={form.address}
+            name="fullAddress"
+            value={form.fullAddress}
             onChange={handleChange}
-            placeholder="Zahir Raihan Rd, Dhaka"
             required
-            className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-rose-400 text-slate-600"
+            className="w-full rounded-xl border px-4 py-2.5"
           />
         </div>
 
         {/* BLOOD + DATE */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Blood Group
-            </label>
-            <select
-              name="bloodGroup"
-              value={form.bloodGroup}
-              onChange={handleChange}
-              required
-              className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-rose-400 text-slate-600 cursor-pointer"
-            >
-              <option value="">Select</option>
-              {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(bg => (
-                <option key={bg}>{bg}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Donation Date
-            </label>
-            <input
-              type="date"
-              name="donationDate"
-              value={form.donationDate}
-              onChange={handleChange}
-              required
-              className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-rose-400 text-slate-600"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Donation Time
-          </label>
-          <input
-            type="time"
-            name="donationTime"
-            value={form.donationTime}
+          <select
+            name="bloodGroup"
+            value={form.bloodGroup}
             onChange={handleChange}
             required
-            className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-rose-400 text-slate-600"
+            className="w-full rounded-xl border px-4 py-2.5"
+          >
+            <option value="">Select blood group</option>
+            {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((bg) => (
+              <option key={bg}>{bg}</option>
+            ))}
+          </select>
+
+          <input
+            type="date"
+            name="donationDate"
+            value={form.donationDate}
+            onChange={handleChange}
+            required
+            className="w-full rounded-xl border px-4 py-2.5"
           />
         </div>
+
+        <input
+          type="time"
+          name="donationTime"
+          value={form.donationTime}
+          onChange={handleChange}
+          required
+          className="w-full rounded-xl border px-4 py-2.5"
+        />
 
         {/* MESSAGE */}
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Request Message
-          </label>
-          <textarea
-            name="message"
-            rows="4"
-            value={form.message}
-            onChange={handleChange}
-            placeholder="Explain why blood is needed"
-            required
-            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:ring-2 focus:ring-rose-400 resize-none text-slate-600"
-          />
-        </div>
+        <textarea
+          name="requestMessage"
+          rows="4"
+          value={form.requestMessage}
+          onChange={handleChange}
+          required
+          className="w-full rounded-xl border px-4 py-3 resize-none"
+        />
 
         {error && (
           <div className="text-sm text-red-600 bg-red-50 px-4 py-3 rounded-xl">
@@ -281,7 +268,7 @@ export default function CreateDonationRequest() {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="px-6 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 cursor-pointer"
+            className="px-6 py-2.5 rounded-xl border"
           >
             Cancel
           </button>
@@ -289,7 +276,7 @@ export default function CreateDonationRequest() {
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-2.5 rounded-xl bg-rose-600 text-white font-medium hover:bg-rose-700 shadow disabled:opacity-60 cursor-pointer"
+            className="px-6 py-2.5 rounded-xl bg-rose-600 text-white"
           >
             {loading ? "Requesting..." : "Request Blood"}
           </button>
