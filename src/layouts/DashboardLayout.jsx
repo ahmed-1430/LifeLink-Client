@@ -3,12 +3,25 @@ import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import Sidebar from "../Component/dashboard/Sidebar";
 import Topbar from "../component/dashboard/Topbar";
+import PageLoader from "../Component/ui/PageLoader";
 
 export default function DashboardLayout() {
-  const { user, logout } = useContext(AuthContext);
+  const { user, loading, logout } = useContext(AuthContext);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  if (!user) return <Navigate to="/login" replace />;
+
+  //  WAIT FOR AUTH CHECK
+
+  if (loading) {
+    return <PageLoader />;
+  }
+
+
+  //  NOT AUTHENTICATED
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 flex overflow-hidden">
@@ -22,12 +35,11 @@ export default function DashboardLayout() {
 
       {/* SIDEBAR */}
       <Sidebar
-        role={user.role}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
 
-      {/* MAIN */}
+      {/* MAIN CONTENT */}
       <div className="flex-1 flex flex-col min-w-0">
         <Topbar
           user={user}
