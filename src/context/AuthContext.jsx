@@ -1,79 +1,81 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable react-refresh/only-export-components */
-/* eslint-disable react-hooks/exhaustive-deps */
-import React, { createContext, useState, useEffect } from "react";
-import { jwtDecode } from "jwt-decode";
+import { createContext, useEffect, useState } from "react";
+import API from "../api/axios";
 
-export const AuthContext = createContext();
+export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const [token, setToken] = useState(localStorage.getItem("lifelink_token"));
     const [loading, setLoading] = useState(true);
 
-    //  Validate Token + Auto Logout if expired
-    const validateToken = (tokenStr) => {
-        try {
-            const decoded = jwtDecode(tokenStr);
-
-            const now = Date.now() / 1000;
-            if (decoded.exp && decoded.exp < now) {
-                console.warn("Token expired");
-                logout();
-                return null;
-            }
-
-            return decoded;
-        } catch (err) {
-            console.error("Invalid token:", err);
-            logout();
-            return null;
-        }
-    };
-
+    /* ===============================
+       Load user on app start / reload
+    ================================ */
     useEffect(() => {
-        if (token) {
-            const decoded = validateToken(token);
-            if (decoded) {
-                setUser({
-                    email: decoded.email,
-                    role: decoded.role,
-                    userId: decoded.userId,
-                    name: decoded.name,
-                    avatar: decoded.avatar,
-                });
-            }
+        const token = localStorage.getItem("lifelink_token");
+
+        if (!token) {
+            setLoading(false);
+            return;
         }
-        setLoading(false);
-    }, [token]);
 
-    //  Login function
-    const login = (tokenStr, userData) => {
-        localStorage.setItem("lifelink_token", tokenStr);
-        setToken(tokenStr);
+        API.get("/auth/profile")
+            .then((res) => {
+                const profile = res.data;
 
-        // immediate decode
-        const decoded = validateToken(tokenStr);
-        if (decoded) {
-            setUser({
-                email: decoded.email,
-                role: decoded.role,
-                userId: decoded.userId,
-                name: decoded.name,
-                avatar: decoded.avatar,
+                // Blocked user safety
+                if (profile.status === "blocked") {
+                    logout();
+                    return;
+                }
+
+                setUser(profile);
+            })
+            .catch(() => {
+                logout();
+            })
+            .finally(() => {
+                setLoading(false);
             });
-        }
+    }, []);
+
+    /* ===============================
+       Login
+    ================================ */
+    const login = (token) => {
+        localStorage.setItem("lifelink_token", token);
+        setLoading(true);
+
+        API.get("/auth/profile")
+            .then((res) => {
+                setUser(res.data);
+            })
+            .catch(() => {
+                logout();
+            })
+            .finally(() => {
+                setLoading(false);
+            });
     };
 
-    //  Logout function
+    /* ===============================
+       Logout
+    ================================ */
     const logout = () => {
         localStorage.removeItem("lifelink_token");
-        setToken(null);
         setUser(null);
+        setLoading(false);
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, loading }}>
+        <AuthContext.Provider
+            value={{
+                user,
+                loading,
+                login,
+                logout,
+                isAuthenticated: !!user,
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );
