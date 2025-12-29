@@ -1,30 +1,47 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import ProtectedRoute from "./Routes/ProtectedRoute";
+
+/* Layouts */
 import PublicLayout from "./layouts/PublicLayout";
+import DashboardLayout from "./layouts/DashboardLayout";
+
+/* Route Guards */
+import ProtectedRoute from "./Routes/ProtectedRoute";
+
+/* Public Pages */
 import Home from "./pages/Home";
-import DonorHome from "./pages/Dashboard/DonorHome";
-import MyRequests from "./pages/Dashboard/MyRequests";
-import CreateRequest from "./pages/Dashboard/CreateRequest";
+import Search from "./pages/Search";
+import PublicRequests from "./pages/PublicRequests";
+import RequestDetails from "./pages/RequestDetails";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
-import DashboardLayout from "./layouts/DashboardLayout";
-import VolunteerHome from "./pages/Dashboard/VolunteerHome";
-import AdminDashboard from "./pages/Admin/AdminDashboard";
-import AllRequests from "./pages/Dashboard/AllRequests";
 
-
-
+/* Dashboard Pages */
+import DonorHome from "./pages/Dashboard/DonorHome";
+import MyDonationRequests from "./pages/Dashboard/MyDonationRequests";
+import CreateDonationRequest from "./pages/Dashboard/CreateDonationRequest";
+import AllBloodDonationRequests from "./pages/Dashboard/AllBloodDonationRequests";
+import Funding from "./pages/Dashboard/Funding";
+import AllUsers from "./pages/Dashboard/AllUsers";
 
 const router = createBrowserRouter([
+  /* ===============================
+     PUBLIC ROUTES
+  ================================ */
   {
     element: <PublicLayout />,
     children: [
       { path: "/", element: <Home /> },
+      { path: "/search", element: <Search /> },
+      { path: "/requests", element: <PublicRequests /> },
+      { path: "/requests/:id", element: <RequestDetails /> },
       { path: "/login", element: <Login /> },
       { path: "/register", element: <Register /> },
     ],
   },
 
+  /* ===============================
+     DASHBOARD ROUTES (AUTH USERS)
+  ================================ */
   {
     element: <ProtectedRoute />,
     children: [
@@ -33,41 +50,24 @@ const router = createBrowserRouter([
         element: <DashboardLayout />,
         children: [
           { index: true, element: <DonorHome /> },
-          { path: "requests", element: <MyRequests /> },
-          { path: "create", element: <CreateRequest /> },
+          { path: "requests", element: <MyDonationRequests /> },
+          { path: "create", element: <CreateDonationRequest /> },
+          { path: "all-requests", element: <AllBloodDonationRequests /> },
+          { path: "funding", element: <Funding /> },
+
+          /* ADMIN ONLY */
           {
-            path: "/dashboard/all-requests",
-            element: <AllRequests />
-          }
+            path: "users",
+            element: (
+              <ProtectedRoute roles={["admin"]}>
+                <AllUsers />
+              </ProtectedRoute>
+            ),
+          },
         ],
       },
     ],
   },
-
-  {
-    element: <ProtectedRoute roles={["admin"]} />,
-    children: [
-      {
-        path: "/admin",
-        element: <DashboardLayout />,
-        children: [{ index: true, element: <AdminDashboard /> }],
-      },
-    ],
-  },
-  {
-    element: <ProtectedRoute roles={["volunteer"]} />,
-    children: [
-      {
-        path: "/volunteer",
-        element: <DashboardLayout />,
-        children: [
-          { index: true, element: <VolunteerHome /> },
-
-        ],
-      },
-    ],
-  },
-
 ]);
 
 export default function App() {
