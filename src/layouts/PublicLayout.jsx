@@ -1,14 +1,30 @@
-import React from "react";
-import { Outlet, Link, NavLink } from "react-router-dom";
+import { Outlet, Link, NavLink, Navigate } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
+import PageLoader from "../Component/ui/PageLoader";
 
 export default function PublicLayout() {
+    const { user, loading } = useContext(AuthContext);
+
+
+    //    WAIT FOR AUTH CHECK
+
+    if (loading) {
+        return <PageLoader />;
+    }
+
+
+    //    REDIRECT AUTHENTICATED USERS
+
+    if (user) {
+        return <Navigate to="/dashboard" replace />;
+    }
+
     return (
         <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
-
             {/* NAVBAR */}
             <header className="sticky top-0 z-50 backdrop-blur bg-white/80 border-b border-slate-200">
                 <nav className="w-11/12 mx-auto h-16 flex items-center justify-between">
-
                     {/* Brand */}
                     <Link to="/" className="flex items-center gap-2">
                         <span className="w-8 h-8 rounded-lg bg-rose-600 text-white flex items-center justify-center font-bold">
@@ -40,7 +56,6 @@ export default function PublicLayout() {
                             Get Started
                         </NavLink>
                     </div>
-
                 </nav>
             </header>
 
@@ -52,8 +67,6 @@ export default function PublicLayout() {
             {/* FOOTER */}
             <footer className="bg-[#F8FAFC] border-t border-slate-200">
                 <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
-
-                    {/* Left: Brand */}
                     <div className="flex items-center gap-2">
                         <span className="w-8 h-8 rounded-lg bg-rose-600 text-white flex items-center justify-center font-bold">
                             L
@@ -63,16 +76,13 @@ export default function PublicLayout() {
                         </span>
                     </div>
 
-                    {/* Center: Message */}
                     <p className="text-sm text-slate-500 text-center">
                         Connecting blood donors and patients when every moment matters.
                     </p>
 
-                    {/* Right: Legal */}
                     <p className="text-sm text-slate-400">
                         © {new Date().getFullYear()} LifeLink
                     </p>
-
                 </div>
             </footer>
         </div>
