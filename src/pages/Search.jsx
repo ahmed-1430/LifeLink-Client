@@ -19,7 +19,7 @@ export default function Search() {
        LOAD DISTRICTS
     ================================ */
     useEffect(() => {
-        API.get("/districts")
+        API.get("/geo/districts")
             .then((res) => setDistricts(res.data || []))
             .catch(() => setDistricts([]));
     }, []);
@@ -33,7 +33,7 @@ export default function Search() {
             return;
         }
 
-        API.get(`/upazilas/${district}`)
+        API.get(`/geo/upazilas/${district}`)
             .then((res) => setUpazilas(res.data || []))
             .catch(() => setUpazilas([]));
     }, [district]);

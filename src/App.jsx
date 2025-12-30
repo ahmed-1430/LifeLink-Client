@@ -17,9 +17,9 @@ import Register from "./pages/Auth/Register";
 
 /* Dashboard Pages */
 import DonorHome from "./pages/Dashboard/DonorHome";
-import MyDonationRequests from "./pages/Dashboard/MyDonationRequests";
-import CreateDonationRequest from "./pages/Dashboard/CreateDonationRequest";
-import AllBloodDonationRequests from "./pages/Dashboard/AllBloodDonationRequests";
+import MyDonationRequests from "./pages/Dashboard/MyRequests";
+import CreateDonationRequest from "./pages/Dashboard/CreateRequest";
+import AllBloodDonationRequests from "./pages/Dashboard/AllRequests";
 import Funding from "./pages/Dashboard/Funding";
 import AllUsers from "./pages/Dashboard/AllUsers";
 
