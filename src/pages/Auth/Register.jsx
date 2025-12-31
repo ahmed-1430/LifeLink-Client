@@ -1,5 +1,4 @@
-/* eslint-disable no-unused-vars */
-import React, { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import { AuthContext } from "../../context/AuthContext";
@@ -8,13 +7,13 @@ import { Eye, EyeOff, Upload } from "lucide-react";
 
 export default function Register() {
     const navigate = useNavigate();
-    const { login } = useContext(AuthContext);
+    const { user, loading: authLoading } = useContext(AuthContext);
 
     const [form, setForm] = useState({
         name: "",
         email: "",
         password: "",
-        confirm_password: "",
+        confirmPassword: "",
         bloodGroup: "",
         district: "",
         upazila: "",
@@ -23,23 +22,40 @@ export default function Register() {
     const [avatarFile, setAvatarFile] = useState(null);
     const [districts, setDistricts] = useState([]);
     const [upazilas, setUpazilas] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
 
-    /* ---------------- Load Districts ---------------- */
+    /* ===============================
+       REDIRECT IF LOGGED IN
+    ================================ */
     useEffect(() => {
-        API.get("/geo/districts")
+        if (!authLoading && user) {
+            navigate("/dashboard", { replace: true });
+        }
+    }, [user, authLoading, navigate]);
+
+    /* ===============================
+       LOAD DISTRICTS
+    ================================ */
+    useEffect(() => {
+        API.get("/districts")
             .then((res) => setDistricts(res.data || []))
             .catch(() => setDistricts([]));
     }, []);
 
-    /* ---------------- Load Upazilas ---------------- */
+    /* ===============================
+       LOAD UPAZILAS
+    ================================ */
     useEffect(() => {
-        if (!form.district) return setUpazilas([]);
-        API.get(`/geo/upazilas/${form.district}`)
+        if (!form.district) {
+            setUpazilas([]);
+            return;
+        }
+
+        API.get(`/upazilas/${form.district}`)
             .then((res) => setUpazilas(res.data || []))
             .catch(() => setUpazilas([]));
     }, [form.district]);
@@ -47,13 +63,15 @@ export default function Register() {
     const handleChange = (e) =>
         setForm({ ...form, [e.target.name]: e.target.value });
 
-    /* ---------------- Validation ---------------- */
+    /* ===============================
+       VALIDATION
+    ================================ */
     const validate = () => {
         if (!form.name) return "Name is required";
         if (!form.email) return "Email is required";
         if (form.password.length < 6)
             return "Password must be at least 6 characters";
-        if (form.password !== form.confirm_password)
+        if (form.password !== form.confirmPassword)
             return "Passwords do not match";
         if (!form.bloodGroup) return "Select blood group";
         if (!form.district) return "Select district";
@@ -61,70 +79,67 @@ export default function Register() {
         return null;
     };
 
-    /* ---------------- Image Upload (imgBB) ---------------- */
+    /* ===============================
+       OPTIONAL AVATAR UPLOAD
+    ================================ */
     const uploadAvatar = async () => {
         if (!avatarFile) return null;
 
-        const formData = new FormData();
-        formData.append("image", avatarFile);
+        try {
+            const formData = new FormData();
+            formData.append("image", avatarFile);
 
-        const res = await fetch(
-            `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_KEY}`,
-            {
-                method: "POST",
-                body: formData,
-            }
-        );
+            const res = await fetch(
+                `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_KEY}`,
+                { method: "POST", body: formData }
+            );
 
-        const data = await res.json();
-        return data?.data?.url || null;
+            const data = await res.json();
+            return data?.data?.url || null;
+        } catch {
+            return null; // fail silently
+        }
     };
 
-    /* ---------------- Submit ---------------- */
+    /* ===============================
+       SUBMIT
+    ================================ */
     const submit = async (e) => {
         e.preventDefault();
         setError("");
 
-        const v = validate();
-        if (v) return setError(v);
+        const validationError = validate();
+        if (validationError) return setError(validationError);
 
-        setLoading(true);
+        setSubmitting(true);
 
         try {
-            const avatarUrl = await uploadAvatar();
+            const avatar = await uploadAvatar();
 
-            const payload = {
-                name: form.name,
-                email: form.email,
+            await API.post("/register", {
+                name: form.name.trim(),
+                email: form.email.trim(),
                 password: form.password,
-                avatar: avatarUrl,
+                avatar,
                 bloodGroup: form.bloodGroup,
                 district: form.district,
                 upazila: form.upazila,
-            };
-
-            const res = await API.post("/register", payload);
-
-            // auto login
-            const loginRes = await API.post("/login", {
-                email: form.email,
-                password: form.password,
             });
 
-            login(loginRes.data.token, loginRes.data.user);
-            navigate("/dashboard");
+            // Redirect to login after successful registration
+            navigate("/login", {
+                state: { registered: true },
+                replace: true,
+            });
         } catch (err) {
-            setError(
-                err.response?.data?.message || "Registration failed"
-            );
+            setError(err.response?.data?.message || "Registration failed");
         } finally {
-            setLoading(false);
+            setSubmitting(false);
         }
     };
 
     return (
         <div className="min-h-screen grid md:grid-cols-2 bg-[#F8FAFC]">
-
             {/* LEFT */}
             <div className="hidden md:flex flex-col justify-center px-16 bg-linear-to-br from-rose-50 via-white to-blue-50">
                 <h1 className="text-3xl font-bold text-slate-900">
@@ -138,10 +153,10 @@ export default function Register() {
             {/* RIGHT */}
             <div className="flex items-center justify-center px-6">
                 <div className="w-full max-w-md bg-white border rounded-2xl shadow-xl p-8">
-
-                    <h2 className="text-2xl text-rose-500 font-semibold text-center mb-1">
+                    <h2 className="text-2xl text-rose-600 font-semibold text-center mb-1">
                         Sign up
                     </h2>
+
                     <p className="text-sm text-slate-500 text-center mb-4">
                         Create your account
                     </p>
@@ -153,11 +168,10 @@ export default function Register() {
                     )}
 
                     <form onSubmit={submit} className="space-y-4">
-
                         <input
                             name="name"
                             placeholder="Full name"
-                            className="w-full input bg-white text-slate-500 border-2 border-slate-500/30"
+                            className="w-full input border"
                             value={form.name}
                             onChange={handleChange}
                         />
@@ -166,15 +180,15 @@ export default function Register() {
                             name="email"
                             type="email"
                             placeholder="Email"
-                            className="w-full input bg-white text-slate-500 border-2 border-slate-500/30"
+                            className="w-full input border"
                             value={form.email}
                             onChange={handleChange}
                         />
 
                         {/* Avatar */}
-                        <label className="flex items-center gap-2 text-sm cursor-pointer text-rose-500">
+                        <label className="flex items-center gap-2 text-sm cursor-pointer text-rose-600">
                             <Upload size={16} />
-                            Upload avatar
+                            Upload avatar (optional)
                             <input
                                 type="file"
                                 accept="image/*"
@@ -189,7 +203,7 @@ export default function Register() {
                                 type={showPassword ? "text" : "password"}
                                 name="password"
                                 placeholder="Password"
-                                className="w-full input pr-10 bg-white text-slate-500 border-2 border-slate-500/30"
+                                className="w-full input border pr-10"
                                 value={form.password}
                                 onChange={handleChange}
                             />
@@ -202,14 +216,14 @@ export default function Register() {
                             </button>
                         </div>
 
-                        {/* Confirm Password */}
+                        {/* Confirm */}
                         <div className="relative">
                             <input
                                 type={showConfirm ? "text" : "password"}
-                                name="confirm_password"
+                                name="confirmPassword"
                                 placeholder="Confirm password"
-                                className="w-full input pr-10 bg-white text-slate-500 border-2 border-slate-500/30"
-                                value={form.confirm_password}
+                                className="w-full input border pr-10"
+                                value={form.confirmPassword}
                                 onChange={handleChange}
                             />
                             <button
@@ -221,10 +235,10 @@ export default function Register() {
                             </button>
                         </div>
 
-                        {/* Blood group */}
+                        {/* Blood */}
                         <select
                             name="bloodGroup"
-                            className="w-full input bg-white text-slate-500 border-2 border-slate-500/30 cursor-pointer"
+                            className="w-full input border"
                             value={form.bloodGroup}
                             onChange={handleChange}
                         >
@@ -237,7 +251,7 @@ export default function Register() {
                         {/* District */}
                         <select
                             name="district"
-                            className="w-full input bg-white text-slate-500 border-2 border-slate-500/30 cursor-pointer"
+                            className="w-full input border"
                             value={form.district}
                             onChange={handleChange}
                         >
@@ -252,7 +266,7 @@ export default function Register() {
                         {/* Upazila */}
                         <select
                             name="upazila"
-                            className="w-full input bg-white text-slate-500 border-2 border-slate-500/30 cursor-pointer"
+                            className="w-full input border"
                             value={form.upazila}
                             onChange={handleChange}
                         >
@@ -262,8 +276,12 @@ export default function Register() {
                             ))}
                         </select>
 
-                        <Button loading={loading} className="w-full">
-                            Create account
+                        <Button
+                            type="submit"
+                            disabled={submitting}
+                            className="w-full"
+                        >
+                            {submitting ? "Creating account..." : "Create account"}
                         </Button>
                     </form>
 
