@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Button from "../../component/ui/Button";
 import { AuthContext } from "../../context/AuthContext";
@@ -6,40 +6,63 @@ import API from "../../api/axios";
 import { Droplet } from "lucide-react";
 
 export default function Login() {
-    const { login } = useContext(AuthContext);
+    const { login, user, loading: authLoading } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const [form, setForm] = useState({ email: "", password: "" });
-    const [loading, setLoading] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
 
+    /* ===============================
+       REDIRECT IF ALREADY LOGGED IN
+    ================================ */
+    useEffect(() => {
+        if (!authLoading && user) {
+            navigate("/dashboard", { replace: true });
+        }
+    }, [user, authLoading, navigate]);
+
+    /* ===============================
+       SUBMIT
+    ================================ */
     const submit = async (e) => {
         e.preventDefault();
-        setLoading(true);
+        setSubmitting(true);
         setError("");
 
         try {
-            const res = await API.post("/login", form);
+            const res = await API.post("/login", {
+                email: form.email.trim(),
+                password: form.password,
+            });
+
             login(res.data.token, res.data.user);
-            navigate("/dashboard");
+
+            // Role-aware redirect (future-safe)
+            navigate("/dashboard", { replace: true });
         } catch (err) {
-            setError(err.response?.data?.message || "Invalid email or password");
+            const msg =
+                err.response?.data?.message ||
+                "Invalid email or password";
+
+            setError(msg);
         } finally {
-            setLoading(false);
+            setSubmitting(false);
         }
     };
 
     return (
         <div className="min-h-screen grid md:grid-cols-2 bg-[#F8FAFC]">
-
-            {/* LEFT: Brand / Message */}
+            {/* LEFT */}
             <div className="hidden md:flex flex-col justify-center px-16 bg-linear-to-br from-rose-50 via-white to-blue-50">
                 <div className="max-w-md">
                     <div className="flex items-center gap-2 mb-6">
                         <span className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center font-bold">
                             L
                         </span>
-                        <span className="text-xl text-slate-900 font-bold">LifeLink</span>
+                        <span className="text-xl text-slate-900 font-bold">
+                            LifeLink
+                        </span>
                     </div>
 
                     <h1 className="text-3xl font-bold text-slate-900 leading-snug">
@@ -55,11 +78,10 @@ export default function Login() {
                 </div>
             </div>
 
-            {/* RIGHT: Login Form */}
+            {/* RIGHT */}
             <div className="flex items-center justify-center px-6">
                 <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-xl p-8">
-
-                    {/* Header */}
+                    {/* HEADER */}
                     <div className="text-center">
                         <div className="mx-auto w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center mb-4">
                             <Droplet size={22} />
@@ -73,14 +95,14 @@ export default function Login() {
                         </p>
                     </div>
 
-                    {/* Error */}
+                    {/* ERROR */}
                     {error && (
                         <div className="mt-4 text-sm text-red-600 text-center">
                             {error}
                         </div>
                     )}
 
-                    {/* Form */}
+                    {/* FORM */}
                     <form onSubmit={submit} className="mt-6 space-y-4">
                         <div>
                             <label className="block text-sm text-slate-600 mb-1">
@@ -115,14 +137,15 @@ export default function Login() {
                         </div>
 
                         <Button
-                            loading={loading}
-                            className="w-full mt-2 cursor-pointer"
+                            type="submit"
+                            disabled={submitting}
+                            className="w-full mt-2"
                         >
-                            Sign in
+                            {submitting ? "Signing in..." : "Sign in"}
                         </Button>
                     </form>
 
-                    {/* Footer */}
+                    {/* FOOTER */}
                     <p className="mt-6 text-sm text-center text-slate-600">
                         Don’t have an account?{" "}
                         <Link
@@ -132,7 +155,6 @@ export default function Login() {
                             Create one
                         </Link>
                     </p>
-
                 </div>
             </div>
         </div>

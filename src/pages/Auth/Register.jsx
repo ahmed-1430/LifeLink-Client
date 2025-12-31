@@ -31,7 +31,7 @@ export default function Register() {
 
     /* ---------------- Load Districts ---------------- */
     useEffect(() => {
-        API.get("/districts")
+        API.get("/geo/districts")
             .then((res) => setDistricts(res.data || []))
             .catch(() => setDistricts([]));
     }, []);
@@ -39,7 +39,7 @@ export default function Register() {
     /* ---------------- Load Upazilas ---------------- */
     useEffect(() => {
         if (!form.district) return setUpazilas([]);
-        API.get(`/upazilas/${form.district}`)
+        API.get(`/geo/upazilas/${form.district}`)
             .then((res) => setUpazilas(res.data || []))
             .catch(() => setUpazilas([]));
     }, [form.district]);

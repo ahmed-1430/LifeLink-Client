@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem("lifelink_token", token);
         setLoading(true);
 
-        API.get("/auth/profile")
+        API.get("/auth/login")
             .then((res) => {
                 setUser(res.data);
             })
