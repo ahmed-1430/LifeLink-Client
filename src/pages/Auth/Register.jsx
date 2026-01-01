@@ -41,7 +41,7 @@ export default function Register() {
        LOAD DISTRICTS
     ================================ */
     useEffect(() => {
-        API.get("/districts")
+        API.get("/geo/districts")
             .then((res) => setDistricts(res.data || []))
             .catch(() => setDistricts([]));
     }, []);
@@ -55,7 +55,7 @@ export default function Register() {
             return;
         }
 
-        API.get(`/upazilas/${form.district}`)
+        API.get(`/geo/upazilas/${form.district}`)
             .then((res) => setUpazilas(res.data || []))
             .catch(() => setUpazilas([]));
     }, [form.district]);
@@ -116,7 +116,7 @@ export default function Register() {
         try {
             const avatar = await uploadAvatar();
 
-            await API.post("/register", {
+            await API.post("/auth/register", {
                 name: form.name.trim(),
                 email: form.email.trim(),
                 password: form.password,
