@@ -20,15 +20,12 @@ export const AuthProvider = ({ children }) => {
 
         API.get("/auth/profile")
             .then((res) => {
-                const profile = res.data;
-
-                // Blocked user safety
-                if (profile.status === "blocked") {
+                if (res.data?.status === "blocked") {
                     logout();
                     return;
                 }
 
-                setUser(profile);
+                setUser(res.data);
             })
             .catch(() => {
                 logout();
@@ -39,26 +36,16 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     /* ===============================
-       Login
+       LOGIN (FIXED)
+       token + user come from Login.jsx
     ================================ */
-    const login = (token) => {
+    const login = (token, userData) => {
         localStorage.setItem("lifelink_token", token);
-        setLoading(true);
-
-        API.get("/auth/login")
-            .then((res) => {
-                setUser(res.data);
-            })
-            .catch(() => {
-                logout();
-            })
-            .finally(() => {
-                setLoading(false);
-            });
+        setUser(userData);
     };
 
     /* ===============================
-       Logout
+       LOGOUT
     ================================ */
     const logout = () => {
         localStorage.removeItem("lifelink_token");
