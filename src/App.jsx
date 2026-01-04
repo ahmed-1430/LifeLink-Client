@@ -21,6 +21,8 @@ import MyDonationRequests from "./pages/Dashboard/MyRequests";
 import CreateDonationRequest from "./pages/Dashboard/CreateRequest";
 import AllBloodDonationRequests from "./pages/Dashboard/AllRequests";
 import Funding from "./pages/Dashboard/Funding";
+
+/* Admin Pages */
 import AllUsers from "./pages/Dashboard/AllUsers";
 
 const router = createBrowserRouter([
@@ -40,7 +42,7 @@ const router = createBrowserRouter([
   },
 
   /* ===============================
-     DASHBOARD ROUTES (AUTH USERS)
+     AUTHENTICATED DASHBOARD
   ================================ */
   {
     element: <ProtectedRoute />,
@@ -54,16 +56,22 @@ const router = createBrowserRouter([
           { path: "create", element: <CreateDonationRequest /> },
           { path: "all-requests", element: <AllBloodDonationRequests /> },
           { path: "funding", element: <Funding /> },
+        ],
+      },
+    ],
+  },
 
-          /* ADMIN ONLY */
-          {
-            path: "users",
-            element: (
-              <ProtectedRoute roles={["admin"]}>
-                <AllUsers />
-              </ProtectedRoute>
-            ),
-          },
+  /* ===============================
+     ADMIN ONLY ROUTES
+  ================================ */
+  {
+    element: <ProtectedRoute roles={["admin"]} />,
+    children: [
+      {
+        path: "/dashboard",
+        element: <DashboardLayout />,
+        children: [
+          { path: "all-users", element: <AllUsers /> },
         ],
       },
     ],

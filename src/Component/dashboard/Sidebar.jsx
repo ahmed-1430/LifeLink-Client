@@ -129,7 +129,7 @@ export default function Sidebar({ isOpen, onClose }) {
                         </p>
 
                         <NavLink
-                            to="/dashboard/all-blood-donation-request"
+                            to="/dashboard/all-requests"
                             onClick={onClose}
                             className={({ isActive }) =>
                                 `${navItem} ${isActive
@@ -166,7 +166,7 @@ export default function Sidebar({ isOpen, onClose }) {
                         </NavLink>
 
                         <NavLink
-                            to="/dashboard/all-blood-donation-request"
+                            to="/dashboard/all-requests"
                             onClick={onClose}
                             className={({ isActive }) =>
                                 `${navItem} ${isActive
