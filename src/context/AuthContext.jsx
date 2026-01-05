@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/immutability */
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useEffect, useState } from "react";
 import API from "../api/axios";
 

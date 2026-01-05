@@ -78,7 +78,7 @@ export default function Sidebar({ isOpen, onClose }) {
                         </p>
 
                         <NavLink
-                            to="/dashboard/create-donation-request"
+                            to="/dashboard/create"
                             onClick={onClose}
                             className={({ isActive }) =>
                                 `${navItem} ${isActive
@@ -92,7 +92,7 @@ export default function Sidebar({ isOpen, onClose }) {
                         </NavLink>
 
                         <NavLink
-                            to="/dashboard/my-donation-requests"
+                            to="/dashboard/requests"
                             onClick={onClose}
                             className={({ isActive }) =>
                                 `${navItem} ${isActive

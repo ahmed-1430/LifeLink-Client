@@ -38,7 +38,7 @@ export default function DonorHome() {
                 </h1>
 
                 <Link
-                    to="/dashboard/create-donation-request"
+                    to="/dashboard/create"
                     className="inline-flex items-center justify-center rounded-xl
           bg-rose-600 px-5 py-2.5 text-white font-medium
           hover:bg-rose-700 transition"
@@ -99,7 +99,7 @@ export default function DonorHome() {
 
                     <div className="mt-4 text-right">
                         <Link
-                            to="/dashboard/my-donation-requests"
+                            to="/dashboard/requests"
                             className="text-sm font-medium text-rose-600 hover:underline"
                         >
                             View My All Requests →
@@ -115,7 +115,7 @@ export default function DonorHome() {
                         You haven’t created any donation request yet.
                     </p>
                     <Link
-                        to="/dashboard/create-donation-request"
+                        to="/dashboard/create"
                         className="inline-flex items-center justify-center rounded-xl
             bg-rose-600 px-5 py-2.5 text-white font-medium
             hover:bg-rose-700 transition"
