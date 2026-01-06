@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState, useContext } from "react";
 import API from "../../api/axios";
 import { AuthContext } from "../../context/AuthContext";

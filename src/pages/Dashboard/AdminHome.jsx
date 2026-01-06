@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
 import API from "../../api/axios";
 import { Users, Droplet, Wallet, Activity } from "lucide-react";

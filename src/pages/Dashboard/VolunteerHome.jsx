@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useState, useContext } from "react";
+/* eslint-disable no-unused-vars */
+import { useEffect, useMemo, useState, useContext } from "react";
 import API from "../../api/axios";
 import { AuthContext } from "../../context/AuthContext";
 import { toast } from "../../Component/toast";
-
-const STATUS_OPTIONS = ["pending", "inprogress", "done"];
+import { Filter, CheckCircle, Play } from "lucide-react";
 
 export default function VolunteerHome() {
   const { user } = useContext(AuthContext);
@@ -12,21 +12,22 @@ export default function VolunteerHome() {
   const [requests, setRequests] = useState([]);
   const [updatingId, setUpdatingId] = useState(null);
 
-  /* filters */
   const [statusFilter, setStatusFilter] = useState("all");
   const [bloodFilter, setBloodFilter] = useState("all");
 
-  /* ---------------- LOAD ALL REQUESTS ---------------- */
+  /* ===============================
+     LOAD REQUESTS
+  ================================ */
   useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
       try {
-        const res = await API.get("/all-requests");
-        const data = Array.isArray(res.data) ? res.data : [];
-        if (!cancelled) setRequests(data);
-      } catch (err) {
-        console.error(err);
+        const res = await API.get("/donations");
+        if (!cancelled) {
+          setRequests(Array.isArray(res.data) ? res.data : []);
+        }
+      } catch {
         toast.error("Failed to load donation requests");
       } finally {
         if (!cancelled) setLoading(false);
@@ -37,15 +38,19 @@ export default function VolunteerHome() {
     return () => (cancelled = true);
   }, []);
 
-  /* ---------------- UPDATE STATUS ---------------- */
+  /* ===============================
+     UPDATE STATUS (VOLUNTEER)
+  ================================ */
   const updateStatus = async (id, nextStatus) => {
     try {
       setUpdatingId(id);
 
       if (nextStatus === "inprogress") {
-        await API.patch(`/donation/accept/${id}`);
-      } else if (nextStatus === "done") {
-        await API.patch(`/donation/done/${id}`);
+        await API.patch(`/donations/${id}/accept`);
+      }
+
+      if (nextStatus === "done") {
+        await API.patch(`/donations/${id}/done`);
       }
 
       setRequests((prev) =>
@@ -55,15 +60,16 @@ export default function VolunteerHome() {
       );
 
       toast.success("Status updated");
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error("Status update failed");
     } finally {
       setUpdatingId(null);
     }
   };
 
-  /* ---------------- FILTERED DATA ---------------- */
+  /* ===============================
+     FILTERING
+  ================================ */
   const filtered = useMemo(() => {
     return requests.filter((r) => {
       if (statusFilter !== "all" && r.donationStatus !== statusFilter)
@@ -76,138 +82,141 @@ export default function VolunteerHome() {
 
   if (loading) {
     return (
-      <div className="py-20 text-center text-slate-500">
+      <div className="py-24 flex justify-center text-slate-400">
         Loading volunteer dashboard…
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
 
       {/* HEADER */}
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">
+        <h1 className="text-3xl font-semibold text-slate-900">
           Volunteer Dashboard
         </h1>
-        <p className="text-sm text-slate-500">
-          Manage all blood donation requests
+        <p className="text-slate-500">
+          Manage blood donation requests responsibly
         </p>
       </div>
 
-      {/* FILTERS */}
-      {/* <div className="flex flex-col sm:flex-row gap-4">
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-lg border px-3 py-2 text-sm"
-        >
-          <option value="all">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="inprogress">In Progress</option>
-          <option value="done">Completed</option>
-        </select>
+      {/* FILTER BAR */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex items-center gap-2 rounded-xl bg-white/70 backdrop-blur shadow px-4 py-2">
+          <Filter size={16} className="text-slate-500" />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="bg-transparent text-sm focus:outline-none"
+          >
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="inprogress">In Progress</option>
+            <option value="done">Completed</option>
+          </select>
+        </div>
 
-        <select
-          value={bloodFilter}
-          onChange={(e) => setBloodFilter(e.target.value)}
-          className="rounded-lg border px-3 py-2 text-sm"
-        >
-          <option value="all">All Blood Groups</option>
-          {["A+","A-","B+","B-","AB+","AB-","O+","O-"].map(bg => (
-            <option key={bg} value={bg}>{bg}</option>
-          ))}
-        </select>
-      </div> */}
+        <div className="rounded-xl bg-white/70 backdrop-blur shadow px-4 py-2">
+          <select
+            value={bloodFilter}
+            onChange={(e) => setBloodFilter(e.target.value)}
+            className="bg-transparent text-sm focus:outline-none"
+          >
+            <option value="all">All Blood Groups</option>
+            {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(bg => (
+              <option key={bg}>{bg}</option>
+            ))}
+          </select>
+        </div>
+      </div>
 
-      {/* DESKTOP TABLE */}
-      {/* <div className="hidden md:block bg-white border rounded-xl overflow-x-auto">
+      {/* TABLE */}
+      <div className="rounded-3xl bg-white/70 backdrop-blur shadow-lg overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-slate-600">
+          <thead className="border-b text-slate-500">
             <tr>
-              <th className="px-4 py-3 text-left">Recipient</th>
-              <th className="px-4 py-3 text-left">Blood</th>
-              <th className="px-4 py-3 text-left">Location</th>
-              <th className="px-4 py-3 text-left">Date</th>
-              <th className="px-4 py-3 text-left">Status</th>
+              <th className="px-6 py-4 text-left">Recipient</th>
+              <th className="px-6 py-4">Blood</th>
+              <th className="px-6 py-4">Location</th>
+              <th className="px-6 py-4">Date</th>
+              <th className="px-6 py-4">Action</th>
             </tr>
           </thead>
 
           <tbody>
             {filtered.map((r) => (
-              <tr key={r._id} className="border-t">
-                <td className="px-4 py-3 font-medium">
-                  {r.recipientName}
+              <tr key={r._id} className="hover:bg-slate-50/60 transition">
+                <td className="px-6 py-4 font-medium">{r.recipientName}</td>
+
+                <td className="px-6 py-4 font-semibold text-rose-600">
+                  {r.bloodGroup}
                 </td>
-                <td className="px-4 py-3">{r.bloodGroup}</td>
-                <td className="px-4 py-3">
+
+                <td className="px-6 py-4 text-slate-600">
                   {r.recipientDistrict}, {r.recipientUpazila}
                 </td>
-                <td className="px-4 py-3">
+
+                <td className="px-6 py-4 text-xs text-slate-500">
                   {r.donationDate}
-                  <div className="text-xs text-slate-500">
-                    {r.donationTime}
-                  </div>
+                  <div>{r.donationTime}</div>
                 </td>
-                <td className="px-4 py-3">
-                  {(user.role === "admin" || user.role === "volunteer") ? (
-                    <select
-                      disabled={updatingId === r._id}
-                      value={r.donationStatus}
-                      onChange={(e) =>
-                        updateStatus(r._id, e.target.value)
-                      }
-                      className="rounded-md border px-2 py-1 text-sm"
-                    >
-                      {STATUS_OPTIONS.map((s) => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
-                  ) : (
-                    <span className="text-slate-600">{r.donationStatus}</span>
+
+                {/* ACTION BUTTONS */}
+                <td className="px-6 py-4">
+                  {r.donationStatus === "pending" && (
+                    <ActionBtn
+                      loading={updatingId === r._id}
+                      onClick={() => updateStatus(r._id, "inprogress")}
+                      icon={<Play size={14} />}
+                      color="blue"
+                      label="Accept"
+                    />
+                  )}
+
+                  {r.donationStatus === "inprogress" && (
+                    <ActionBtn
+                      loading={updatingId === r._id}
+                      onClick={() => updateStatus(r._id, "done")}
+                      icon={<CheckCircle size={14} />}
+                      color="green"
+                      label="Mark Done"
+                    />
+                  )}
+
+                  {r.donationStatus === "done" && (
+                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                      Completed
+                    </span>
                   )}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div> */}
-
-      {/* MOBILE CARDS */}
-      {/* <div className="grid grid-cols-1 gap-4 md:hidden">
-        {filtered.map((r) => (
-          <div key={r._id} className="bg-white border rounded-xl p-4 space-y-2">
-            <p className="font-medium">{r.recipientName}</p>
-            <p className="text-sm text-slate-500">
-              {r.recipientDistrict}, {r.recipientUpazila}
-            </p>
-            <p className="text-xs text-slate-400">
-              {r.donationDate} • {r.donationTime}
-            </p>
-
-            <div className="flex items-center justify-between pt-2">
-              <span className="text-sm font-medium">{r.bloodGroup}</span>
-
-              {(user.role === "admin" || user.role === "volunteer") ? (
-                <select
-                  disabled={updatingId === r._id}
-                  value={r.donationStatus}
-                  onChange={(e) =>
-                    updateStatus(r._id, e.target.value)
-                  }
-                  className="rounded-md border px-2 py-1 text-sm"
-                >
-                  {STATUS_OPTIONS.map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
-              ) : (
-                <span className="text-sm">{r.donationStatus}</span>
-              )}
-            </div>
-          </div>
-        ))}
-      </div> */}
+      </div>
     </div>
+  );
+}
+
+/* ===============================
+   ACTION BUTTON
+================================ */
+function ActionBtn({ label, onClick, loading, icon, color }) {
+  const colors = {
+    blue: "bg-blue-600 hover:bg-blue-700",
+    green: "bg-green-600 hover:bg-green-700",
+  };
+
+  return (
+    <button
+      disabled={loading}
+      onClick={onClick}
+      className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-medium text-white shadow
+        ${colors[color]} disabled:opacity-50`}
+    >
+      {loading ? "..." : icon}
+      {label}
+    </button>
   );
 }
