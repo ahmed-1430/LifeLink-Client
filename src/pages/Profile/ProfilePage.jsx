@@ -6,7 +6,7 @@ export default function ProfilePage() {
     const [tab, setTab] = useState("profile");
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="space-y-6">
             {/* HEADER */}
             <div>
                 <h1 className="text-2xl font-semibold text-slate-900">My Profile</h1>
@@ -38,7 +38,7 @@ function TabButton({ children, active, onClick }) {
     return (
         <button
             onClick={onClick}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition cursor-pointer
         ${active
                     ? "border-rose-600 text-rose-600"
                     : "border-transparent text-slate-500 hover:text-slate-700"

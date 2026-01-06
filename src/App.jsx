@@ -24,6 +24,7 @@ import Funding from "./pages/Dashboard/Funding";
 
 /* Admin Pages */
 import AllUsers from "./pages/Dashboard/AllUsers";
+import ProfilePage from "./pages/Profile/ProfilePage";
 
 const router = createBrowserRouter([
   /* ===============================
@@ -56,6 +57,7 @@ const router = createBrowserRouter([
           { path: "create", element: <CreateDonationRequest /> },
           { path: "all-requests", element: <AllBloodDonationRequests /> },
           { path: "funding", element: <Funding /> },
+          { path: "profile", element: <ProfilePage /> },
         ],
       },
     ],

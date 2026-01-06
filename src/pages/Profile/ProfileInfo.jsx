@@ -87,7 +87,7 @@ export default function ProfileInfo() {
 
             <button
                 disabled={saving}
-                className="bg-rose-600 hover:bg-rose-700 text-white px-6 py-2 rounded-xl text-sm font-medium"
+                className="bg-rose-600 hover:bg-rose-700 text-white px-6 py-2 rounded-xl text-sm font-medium cursor-pointer"
             >
                 {saving ? "Saving..." : "Save Changes"}
             </button>
