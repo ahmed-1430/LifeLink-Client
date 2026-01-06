@@ -38,7 +38,7 @@ export default function Funding() {
     useEffect(() => {
         if (isAdmin) loadFunds();
         else setLoading(false);
-    }, []);
+    }, [isAdmin]);
 
     /* ===============================
        MOCK DONATE (RECORD ONLY)
