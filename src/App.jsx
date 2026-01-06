@@ -4,7 +4,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import PublicLayout from "./layouts/PublicLayout";
 import DashboardLayout from "./layouts/DashboardLayout";
 
-/* Route Guards */
+/* Guards */
 import ProtectedRoute from "./Routes/ProtectedRoute";
 
 /* Public Pages */
@@ -16,7 +16,7 @@ import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 
 /* Dashboard Pages */
-import DonorHome from "./pages/Dashboard/DonorHome";
+import DashboardIndex from "./pages/Dashboard/DashboardIndex";
 import MyDonationRequests from "./pages/Dashboard/MyRequests";
 import CreateDonationRequest from "./pages/Dashboard/CreateRequest";
 import AllBloodDonationRequests from "./pages/Dashboard/AllRequests";
@@ -24,6 +24,8 @@ import Funding from "./pages/Dashboard/Funding";
 
 /* Admin Pages */
 import AllUsers from "./pages/Dashboard/AllUsers";
+
+/* Profile */
 import ProfilePage from "./pages/Profile/ProfilePage";
 
 const router = createBrowserRouter([
@@ -43,7 +45,7 @@ const router = createBrowserRouter([
   },
 
   /* ===============================
-     AUTHENTICATED DASHBOARD
+     DASHBOARD (AUTHENTICATED)
   ================================ */
   {
     element: <ProtectedRoute />,
@@ -52,28 +54,25 @@ const router = createBrowserRouter([
         path: "/dashboard",
         element: <DashboardLayout />,
         children: [
-          { index: true, element: <DonorHome /> },
+          /* ROLE-BASED HOME */
+          { index: true, element: <DashboardIndex /> },
+
+          /* COMMON */
           { path: "requests", element: <MyDonationRequests /> },
           { path: "create", element: <CreateDonationRequest /> },
           { path: "all-requests", element: <AllBloodDonationRequests /> },
           { path: "funding", element: <Funding /> },
           { path: "profile", element: <ProfilePage /> },
-        ],
-      },
-    ],
-  },
 
-  /* ===============================
-     ADMIN ONLY ROUTES
-  ================================ */
-  {
-    element: <ProtectedRoute roles={["admin"]} />,
-    children: [
-      {
-        path: "/dashboard",
-        element: <DashboardLayout />,
-        children: [
-          { path: "all-users", element: <AllUsers /> },
+          /* ADMIN ONLY */
+          {
+            path: "all-users",
+            element: (
+              <ProtectedRoute roles={["admin"]}>
+                <AllUsers />
+              </ProtectedRoute>
+            ),
+          },
         ],
       },
     ],

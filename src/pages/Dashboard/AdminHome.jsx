@@ -1,169 +1,204 @@
-/* eslint-disable no-empty */
 import { useEffect, useState } from "react";
 import API from "../../api/axios";
+import { Users, Droplet, Wallet, Activity } from "lucide-react";
 
 export default function AdminHome() {
     const [stats, setStats] = useState({
-        totalUsers: 0,
+        totalDonors: 0,
         totalRequests: 0,
-        pendingRequests: 0,
-        completedRequests: 0,
         totalFunding: 0,
     });
 
-    const [recent, setRecent] = useState([]);
+    const [recentRequests, setRecentRequests] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         let cancelled = false;
 
-        const loadAdminStats = async () => {
+        const loadDashboard = async () => {
             try {
-                setLoading(true);
+                const [usersRes, requestsRes, fundRes] = await Promise.all([
+                    API.get("/admin/users"),
+                    API.get("/donations"),
+                    API.get("/funds/total"),
+                ]);
 
-                /* ✅ CORRECT APIs */
-                const usersRes = await API.get("/users");
-                const reqRes = await API.get("/requests");
-
-                const users = Array.isArray(usersRes.data) ? usersRes.data : [];
-                const requests = Array.isArray(reqRes.data) ? reqRes.data : [];
-
-                const pending = requests.filter(
-                    (r) => r.donationStatus == "pending"
-                ).length;
-
-                const completed = requests.filter(
-                    (r) => r.donationStatus == "completed"
-                ).length;
-
-                /* Optional funding (challenge requirement) */
-                let fundingTotal = 0;
-                try {
-                    const fundRes = await API.get("/funding/all");
-                    fundingTotal = fundRes.data?.totalAmount || 0;
-                } catch { }
+                const donors =
+                    usersRes.data?.filter((u) => u.role === "donor") || [];
 
                 if (!cancelled) {
                     setStats({
-                        totalUsers: users.length,
-                        totalRequests: requests.length,
-                        pendingRequests: pending,
-                        completedRequests: completed,
-                        totalFunding: fundingTotal,
+                        totalDonors: donors.length,
+                        totalRequests: requestsRes.data?.length || 0,
+                        totalFunding: fundRes.data?.total || 0,
                     });
 
-                    setRecent(requests.slice(0, 5));
+                    setRecentRequests(requestsRes.data?.slice(0, 6) || []);
                 }
             } catch (err) {
-                console.error("Admin dashboard load error:", err);
+                console.error("Admin dashboard error:", err);
             } finally {
                 if (!cancelled) setLoading(false);
             }
         };
 
-        loadAdminStats();
+        loadDashboard();
         return () => (cancelled = true);
     }, []);
 
-    const statusColor = (status) => {
-        switch (status) {
-            case "pending":
-                return "bg-orange-100 text-orange-700";
-            case "approved":
-                return "bg-blue-100 text-blue-700";
-            case "completed":
-                return "bg-green-100 text-green-700";
-            default:
-                return "bg-slate-100 text-slate-700";
-        }
-    };
-
     if (loading) {
         return (
-            <div className="text-center py-20 text-slate-500">
-                Loading admin dashboard…
+            <div className="py-28 flex items-center justify-center">
+                <div className="animate-pulse text-slate-400 text-sm">
+                    Loading admin dashboard…
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="space-y-10">
+        <div className="space-y-14">
 
-            {/* WELCOME */}
-            <div>
-                <h1 className="text-2xl font-semibold text-slate-900">
-                    Welcome back, Admin 👋
-                </h1>
-                <p className="text-sm text-slate-500">
-                    Overview of platform activity and donation requests
-                </p>
+            {/* HEADER */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+                        Admin Overview
+                    </h1>
+                    <p className="mt-1 text-slate-500">
+                        Live system metrics & platform health
+                    </p>
+                </div>
+
+                <div className="flex items-center gap-2 rounded-xl bg-white/70 backdrop-blur-md px-4 py-2 shadow">
+                    <Activity size={18} className="text-rose-500" />
+                    <span className="text-sm font-medium text-slate-700">
+                        System Online
+                    </span>
+                </div>
             </div>
 
-            {/* STATS */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-                <Stat label="Total Users" value={stats.totalUsers} icon="👥" />
-                <Stat label="Total Requests" value={stats.totalRequests} icon="📑" />
-                <Stat label="Pending" value={stats.pendingRequests} icon="⏳" />
-                <Stat label="Completed" value={stats.completedRequests} icon="✅" />
-                <Stat label="Funding" value={`৳ ${stats.totalFunding}`} icon="💰" />
+            {/* KPI CARDS */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <KpiCard
+                    label="Total Donors"
+                    value={stats.totalDonors}
+                    icon={Users}
+                    accent="blue"
+                />
+                <KpiCard
+                    label="Blood Requests"
+                    value={stats.totalRequests}
+                    icon={Droplet}
+                    accent="rose"
+                />
+                <KpiCard
+                    label="Total Funding"
+                    value={`$ ${stats.totalFunding}`}
+                    icon={Wallet}
+                    accent="emerald"
+                />
             </div>
 
             {/* RECENT REQUESTS */}
-            <div className="bg-white border rounded-xl shadow-sm p-6">
-                <h2 className="text-xl font-semibold mb-4">
-                    Recent Donation Requests
-                </h2>
+            <div className="rounded-3xl bg-white/70 backdrop-blur-md shadow-lg overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-5">
+                    <h2 className="text-lg font-semibold text-slate-900">
+                        Recent Blood Requests
+                    </h2>
+                    <span className="text-xs text-slate-500">
+                        Latest 6 entries
+                    </span>
+                </div>
 
-                {recent.length === 0 ? (
-                    <p className="text-sm text-slate-500">No requests found.</p>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead className="bg-slate-50 text-slate-600">
-                                <tr>
-                                    <th className="px-4 py-3 text-left">Recipient</th>
-                                    <th className="px-4 py-3 text-left">Blood</th>
-                                    <th className="px-4 py-3 text-left">Location</th>
-                                    <th className="px-4 py-3 text-left">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {recent.map((r) => (
-                                    <tr key={r._id} className="border-t hover:bg-slate-50">
-                                        <td className="px-4 py-3 font-medium">
-                                            {r.recipientName}
-                                        </td>
-                                        <td className="px-4 py-3">{r.bloodGroup}</td>
-                                        <td className="px-4 py-3 text-slate-600">
-                                            {r.recipientDistrict}, {r.recipientUpazila}
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <span
-                                                className={`px-3 py-1 rounded-full text-xs font-medium ${statusColor(
-                                                    r.donationStatus
-                                                )}`}
-                                            >
-                                                {r.donationStatus}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                {recentRequests.length === 0 ? (
+                    <div className="py-16 text-center text-slate-500">
+                        No recent requests
                     </div>
+                ) : (
+                    <table className="w-full text-sm">
+                        <thead className="text-slate-500">
+                            <tr className="border-b border-slate-100">
+                                <th className="px-6 py-3 text-left">Recipient</th>
+                                <th className="px-6 py-3 text-left">Blood</th>
+                                <th className="px-6 py-3 text-left">Location</th>
+                                <th className="px-6 py-3 text-left">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {recentRequests.map((r) => (
+                                <tr
+                                    key={r._id}
+                                    className="hover:bg-slate-50/60 transition"
+                                >
+                                    <td className="px-6 py-4 font-medium">
+                                        {r.recipientName}
+                                    </td>
+                                    <td className="px-6 py-4 font-semibold text-rose-600">
+                                        {r.bloodGroup}
+                                    </td>
+                                    <td className="px-6 py-4 text-slate-600">
+                                        {r.recipientDistrict}, {r.recipientUpazila}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <StatusBadge status={r.donationStatus} />
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 )}
             </div>
         </div>
     );
 }
 
-/* STAT CARD */
-function Stat({ label, value, icon }) {
+/* ===============================
+   KPI CARD (GLASS)
+================================ */
+function KpiCard({ label, value, icon: Icon, accent }) {
+    const accents = {
+        blue: "from-blue-500/20 to-transparent text-blue-600",
+        rose: "from-rose-500/20 to-transparent text-rose-600",
+        emerald: "from-emerald-500/20 to-transparent text-emerald-600",
+    };
+
     return (
-        <div className="bg-white border rounded-xl p-6 shadow-sm">
-            <div className="text-2xl mb-2">{icon}</div>
-            <p className="text-sm text-slate-500">{label}</p>
-            <p className="text-2xl font-semibold text-slate-900">{value}</p>
+        <div className="relative rounded-3xl bg-white/70 backdrop-blur-md shadow-lg overflow-hidden">
+            <div
+                className={`absolute inset-0 bg-linear-to-br ${accents[accent]}`}
+            />
+            <div className="relative p-6 flex items-center justify-between">
+                <div>
+                    <p className="text-sm text-slate-500">{label}</p>
+                    <p className="mt-1 text-3xl font-semibold text-slate-900">
+                        {value}
+                    </p>
+                </div>
+                <div className="h-12 w-12 rounded-2xl bg-white shadow flex items-center justify-center">
+                    <Icon size={22} />
+                </div>
+            </div>
         </div>
+    );
+}
+
+/* ===============================
+   STATUS BADGE
+================================ */
+function StatusBadge({ status }) {
+    const map = {
+        pending: "bg-amber-100/70 text-amber-700",
+        inprogress: "bg-blue-100/70 text-blue-700",
+        done: "bg-green-100/70 text-green-700",
+        canceled: "bg-red-100/70 text-red-700",
+    };
+
+    return (
+        <span
+            className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${map[status]}`}
+        >
+            {status}
+        </span>
     );
 }
