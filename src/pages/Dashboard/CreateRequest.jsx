@@ -78,7 +78,7 @@ export default function CreateDonationRequest() {
         requestMessage: form.requestMessage,
       });
 
-      navigate("/dashboard/my-donation-requests");
+      navigate("/dashboard/requests");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to create request");
     } finally {
