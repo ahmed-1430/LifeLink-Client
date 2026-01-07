@@ -62,7 +62,7 @@ export default function DonorHome() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-semibold text-slate-900">
-                        Welcome, {user.name} 👋
+                        Welcome, {user.name} 
                     </h1>
                     <p className="text-slate-500 mt-1">
                         Manage your blood donation requests
@@ -228,7 +228,7 @@ function IconBtn({ icon, onClick, color = "slate", loading }) {
         <button
             disabled={loading}
             onClick={onClick}
-            className={`inline-flex items-center justify-center h-9 w-9 rounded-lg transition ${colors[color]} disabled:opacity-50`}
+            className={`inline-flex items-center justify-center h-9 w-9 rounded-lg transition ${colors[color]} disabled:opacity-50 cursor-pointer`}
         >
             {icon}
         </button>
