@@ -54,24 +54,17 @@ const router = createBrowserRouter([
         path: "/dashboard",
         element: <DashboardLayout />,
         children: [
-          /* ROLE-BASED HOME */
           { index: true, element: <DashboardIndex /> },
 
-          /* COMMON */
           { path: "requests", element: <MyDonationRequests /> },
           { path: "create", element: <CreateDonationRequest /> },
           { path: "all-requests", element: <AllBloodDonationRequests /> },
           { path: "funding", element: <Funding /> },
           { path: "profile", element: <ProfilePage /> },
 
-          /* ADMIN ONLY */
           {
             path: "all-users",
-            element: (
-              <ProtectedRoute roles={["admin"]}>
-                <AllUsers />
-              </ProtectedRoute>
-            ),
+            element: <AllUsers />,
           },
         ],
       },
