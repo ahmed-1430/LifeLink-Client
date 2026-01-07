@@ -22,42 +22,57 @@ export default function PublicLayout() {
 
     return (
         <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
-            {/* NAVBAR */}
-            <header className="sticky top-0 z-50 backdrop-blur bg-white/80 border-b border-slate-200">
+            {/* ================= NAVBAR ================= */}
+            <header
+                className="sticky top-0 z-50 bg-white/60 backdrop-blur-xl shadow-[0_10px_40px_-20px_rgba(15,23,42,0.25)]"
+            >
                 <nav className="w-11/12 mx-auto h-16 flex items-center justify-between">
-                    {/* Brand */}
-                    <Link to="/" className="flex items-center gap-2">
-                        <span className="w-8 h-8 rounded-lg bg-rose-600 text-white flex items-center justify-center font-bold">
+
+                    {/* BRAND */}
+                    <Link to="/" className="flex items-center gap-3 group">
+                        <div
+                            className="
+          h-9 w-9 rounded-xl
+          bg-linear-to-br from-rose-500 to-pink-600
+          text-white font-bold
+          flex items-center justify-center
+          shadow-[0_10px_30px_-10px_rgba(244,63,94,0.6)]
+          group-hover:scale-105 transition
+        "
+                        >
                             L
-                        </span>
+                        </div>
+
                         <span className="text-lg font-semibold tracking-tight text-slate-900">
                             LifeLink
                         </span>
                     </Link>
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-3">
+                    {/* ACTIONS */}
+                    <div className="flex items-center gap-4">
                         <NavLink
                             to="/login"
                             className={({ isActive }) =>
-                                `text-sm px-4 py-2 rounded-lg transition ${isActive
-                                    ? "text-rose-600"
-                                    : "text-slate-600 hover:text-slate-900"
-                                }`
+                                `
+            text-sm font-medium px-4 py-2 rounded-xl transition
+            ${isActive
+                                    ? "text-rose-600 bg-rose-50"
+                                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
+                                }
+          `
                             }
                         >
                             Login
                         </NavLink>
 
-                        <NavLink
-                            to="/register"
-                            className="text-sm px-5 py-2 rounded-xl bg-rose-600 text-white hover:bg-rose-700 shadow-md transition"
-                        >
+                        <NavLink to="/register" className="text-sm font-semibold px-6 py-2.5 rounded-2xl bg-linear-to-r from-rose-500 to-pink-600 text-white shadow-[0_15px_40px_-15px_rgba(244,63,94,0.5)] hover:scale-[1.03] hover:shadow-[0_20px_50px_-15px_rgba(244,63,94,0.65)] transition">
                             Get Started
                         </NavLink>
                     </div>
+
                 </nav>
             </header>
+
 
             {/* PAGE CONTENT */}
             <main className="flex-1">
