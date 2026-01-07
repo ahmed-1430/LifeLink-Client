@@ -2,6 +2,7 @@ import { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import { AuthContext } from "../../context/AuthContext";
+import { Droplet, MapPin, Calendar, MessageSquare } from "lucide-react";
 
 export default function CreateDonationRequest() {
   const { user } = useContext(AuthContext);
@@ -25,18 +26,18 @@ export default function CreateDonationRequest() {
     requestMessage: "",
   });
 
-
-  //  FETCH DISTRICTS
-
+  /* ===============================
+     FETCH DISTRICTS
+  ================================ */
   useEffect(() => {
     API.get("/geo/districts")
       .then((res) => setDistricts(res.data || []))
       .catch(() => setDistricts([]));
   }, []);
 
-
-  //  FETCH UPAZILAS
-
+  /* ===============================
+     FETCH UPAZILAS
+  ================================ */
   useEffect(() => {
     if (!form.recipientDistrictId) {
       setUpazilas([]);
@@ -51,9 +52,9 @@ export default function CreateDonationRequest() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-
-  //  SUBMIT
-
+  /* ===============================
+     SUBMIT
+  ================================ */
   const submit = async (e) => {
     e.preventDefault();
     setError("");
@@ -64,7 +65,6 @@ export default function CreateDonationRequest() {
     }
 
     setLoading(true);
-
     try {
       await API.post("/donations", {
         recipientName: form.recipientName,
@@ -78,7 +78,7 @@ export default function CreateDonationRequest() {
         requestMessage: form.requestMessage,
       });
 
-      navigate("/dashboard/requests");
+      navigate("/dashboard/my-donation-requests");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to create request");
     } finally {
@@ -87,61 +87,43 @@ export default function CreateDonationRequest() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-10 px-4">
-      <h1 className="text-3xl font-semibold text-slate-900 mb-8">
-        Create Donation Request
-      </h1>
+    <div className="space-y-10">
 
+      {/* HEADER */}
+      <div>
+        <h1 className="text-3xl font-semibold text-slate-900 tracking-tight">
+          Create Donation Request
+        </h1>
+        <p className="mt-1 text-slate-500">
+          Provide accurate information to help donors reach you faster
+        </p>
+      </div>
+
+      {/* FORM CARD */}
       <form
         onSubmit={submit}
-        className="bg-white rounded-2xl border border-slate-200 shadow-lg p-8 space-y-8"
+        className="rounded-3xl bg-white/70 backdrop-blur-md shadow-xl p-8 space-y-10"
       >
+
         {/* REQUESTER INFO */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-slate-600 mb-1">
-              Requester Name
-            </label>
-            <input
-              readOnly
-              value={user?.name || ""}
-              className="w-full rounded-xl bg-slate-100 px-4 py-2.5 text-sm"
-            />
-          </div>
+        <Section title="Requester Information">
+          <ReadOnly label="Requester Name" value={user?.name} />
+          <ReadOnly label="Requester Email" value={user?.email} />
+        </Section>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-600 mb-1">
-              Requester Email
-            </label>
-            <input
-              readOnly
-              value={user?.email || ""}
-              className="w-full rounded-xl bg-slate-100 px-4 py-2.5 text-sm"
-            />
-          </div>
-        </div>
-
-        {/* RECIPIENT NAME */}
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Recipient Name
-          </label>
-          <input
+        {/* RECIPIENT */}
+        <Section title="Recipient Details">
+          <Input
+            label="Recipient Name"
             name="recipientName"
             value={form.recipientName}
             onChange={handleChange}
             required
-            className="w-full rounded-xl border px-4 py-2.5"
           />
-        </div>
 
-        {/* LOCATION */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Recipient District
-            </label>
-            <select
+          <div className="grid md:grid-cols-2 gap-6">
+            <Select
+              label="Recipient District"
               value={form.recipientDistrictId}
               onChange={(e) => {
                 const selected = districts.find(
@@ -154,7 +136,6 @@ export default function CreateDonationRequest() {
                 });
               }}
               required
-              className="w-full rounded-xl border px-4 py-2.5"
             >
               <option value="">Select district</option>
               {districts.map((d) => (
@@ -162,19 +143,14 @@ export default function CreateDonationRequest() {
                   {d.name}
                 </option>
               ))}
-            </select>
-          </div>
+            </Select>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Recipient Upazila
-            </label>
-            <select
+            <Select
+              label="Recipient Upazila"
               name="recipientUpazila"
               value={form.recipientUpazila}
               onChange={handleChange}
               required
-              className="w-full rounded-xl border px-4 py-2.5"
             >
               <option value="">Select upazila</option>
               {upazilas.map((u) => (
@@ -182,83 +158,66 @@ export default function CreateDonationRequest() {
                   {u.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
-        </div>
+        </Section>
 
-        {/* HOSPITAL */}
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Hospital Name
-          </label>
-          <input
+        {/* LOCATION */}
+        <Section title="Donation Location">
+          <Input
+            label="Hospital Name"
             name="hospitalName"
             value={form.hospitalName}
             onChange={handleChange}
             required
-            className="w-full rounded-xl border px-4 py-2.5"
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Full Address
-          </label>
-          <input
+          <Input
+            label="Full Address"
             name="fullAddress"
             value={form.fullAddress}
             onChange={handleChange}
             required
-            className="w-full rounded-xl border px-4 py-2.5"
           />
-        </div>
+        </Section>
 
-        {/* BLOOD + DATE */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <select
-            name="bloodGroup"
-            value={form.bloodGroup}
-            onChange={handleChange}
-            required
-            className="w-full rounded-xl border px-4 py-2.5"
-          >
-            <option value="">Select blood group</option>
-            {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((bg) => (
-              <option key={bg}>{bg}</option>
-            ))}
-          </select>
+        {/* DONATION INFO */}
+        <Section title="Donation Information">
+          <div className="grid md:grid-cols-2 gap-6">
+            <Select
+              label="Blood Group"
+              name="bloodGroup"
+              value={form.bloodGroup}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Select blood group</option>
+              {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(bg => (
+                <option key={bg}>{bg}</option>
+              ))}
+            </Select>
 
-          <input
-            type="date"
-            name="donationDate"
-            value={form.donationDate}
-            onChange={handleChange}
-            required
-            className="w-full rounded-xl border px-4 py-2.5"
-          />
-        </div>
-
-        <input
-          type="time"
-          name="donationTime"
-          value={form.donationTime}
-          onChange={handleChange}
-          required
-          className="w-full rounded-xl border px-4 py-2.5"
-        />
+            <div className="grid grid-cols-2 gap-4">
+              <Input type="date" label="Donation Date" name="donationDate" value={form.donationDate} onChange={handleChange} required />
+              <Input type="time" label="Donation Time" name="donationTime" value={form.donationTime} onChange={handleChange} required />
+            </div>
+          </div>
+        </Section>
 
         {/* MESSAGE */}
-        <textarea
-          name="requestMessage"
-          rows="4"
-          value={form.requestMessage}
-          onChange={handleChange}
-          required
-          className="w-full rounded-xl border px-4 py-3 resize-none"
-        />
+        <Section title="Request Message">
+          <textarea
+            name="requestMessage"
+            rows="4"
+            value={form.requestMessage}
+            onChange={handleChange}
+            required
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-rose-500/20"
+            placeholder="Explain why blood is needed..."
+          />
+        </Section>
 
         {error && (
-          <div className="text-sm text-red-600 bg-red-50 px-4 py-3 rounded-xl">
+          <div className="rounded-xl bg-red-50 text-red-700 px-4 py-3 text-sm">
             {error}
           </div>
         )}
@@ -268,7 +227,7 @@ export default function CreateDonationRequest() {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="px-6 py-2.5 rounded-xl border"
+            className="px-6 py-2.5 rounded-xl border border-slate-300 text-slate-700 cursor-pointer"
           >
             Cancel
           </button>
@@ -276,12 +235,69 @@ export default function CreateDonationRequest() {
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-2.5 rounded-xl bg-rose-600 text-white"
+            className="px-6 py-2.5 rounded-xl bg-rose-600 text-white font-medium hover:bg-rose-700 disabled:opacity-50 cursor-pointer"
           >
             {loading ? "Requesting..." : "Request Blood"}
           </button>
         </div>
       </form>
+    </div>
+  );
+}
+
+/* ===============================
+   REUSABLE COMPONENTS
+================================ */
+function Section({ title, children }) {
+  return (
+    <div className="space-y-4">
+      <h3 className="text-sm font-semibold text-slate-700">{title}</h3>
+      <div className="grid md:grid-cols-2 gap-6">{children}</div>
+    </div>
+  );
+}
+
+function Input({ label, ...props }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-slate-600 mb-1">
+        {label}
+      </label>
+      <input
+        {...props}
+        className="w-full rounded-xl border border-slate-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-rose-500/20"
+      />
+    </div>
+  );
+}
+
+function Select({ label, children, ...props }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-slate-600 mb-1">
+        {label}
+      </label>
+      <select
+        {...props}
+        className="w-full rounded-xl border border-slate-200 px-4 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 cursor-pointer"
+      >
+        {children}
+      </select>
+    </div>
+  );
+}
+
+function ReadOnly({ label, value }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-slate-600 mb-1">
+        {label}
+      </label>
+      <input
+        readOnly
+        value={value || ""}
+        className="w-full rounded-xl bg-slate-100 px-4 py-2.5 text-sm"
+      />
     </div>
   );
 }
