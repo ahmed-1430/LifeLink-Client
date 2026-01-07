@@ -3,7 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import { AuthContext } from "../../context/AuthContext";
 import Button from "../../component/ui/Button";
-import { Eye, EyeOff, Upload } from "lucide-react";
+import {
+    Eye,
+    EyeOff,
+    Upload,
+    Droplet,
+    User
+} from "lucide-react";
 
 export default function Register() {
     const navigate = useNavigate();
@@ -20,6 +26,7 @@ export default function Register() {
     });
 
     const [avatarFile, setAvatarFile] = useState(null);
+    const [avatarPreview, setAvatarPreview] = useState(null);
     const [districts, setDistricts] = useState([]);
     const [upazilas, setUpazilas] = useState([]);
     const [submitting, setSubmitting] = useState(false);
@@ -28,27 +35,21 @@ export default function Register() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
 
-    /* ===============================
-       REDIRECT IF LOGGED IN
-    ================================ */
+    /* ================= REDIRECT ================= */
     useEffect(() => {
         if (!authLoading && user) {
             navigate("/dashboard", { replace: true });
         }
     }, [user, authLoading, navigate]);
 
-    /* ===============================
-       LOAD DISTRICTS
-    ================================ */
+    /* ================= LOAD DISTRICTS ================= */
     useEffect(() => {
         API.get("/geo/districts")
             .then((res) => setDistricts(res.data || []))
             .catch(() => setDistricts([]));
     }, []);
 
-    /* ===============================
-       LOAD UPAZILAS
-    ================================ */
+    /* ================= LOAD UPAZILAS ================= */
     useEffect(() => {
         if (!form.district) {
             setUpazilas([]);
@@ -63,9 +64,7 @@ export default function Register() {
     const handleChange = (e) =>
         setForm({ ...form, [e.target.name]: e.target.value });
 
-    /* ===============================
-       VALIDATION
-    ================================ */
+    /* ================= VALIDATION ================= */
     const validate = () => {
         if (!form.name) return "Name is required";
         if (!form.email) return "Email is required";
@@ -79,9 +78,7 @@ export default function Register() {
         return null;
     };
 
-    /* ===============================
-       OPTIONAL AVATAR UPLOAD
-    ================================ */
+    /* ================= AVATAR UPLOAD ================= */
     const uploadAvatar = async () => {
         if (!avatarFile) return null;
 
@@ -97,13 +94,11 @@ export default function Register() {
             const data = await res.json();
             return data?.data?.url || null;
         } catch {
-            return null; // fail silently
+            return null;
         }
     };
 
-    /* ===============================
-       SUBMIT
-    ================================ */
+    /* ================= SUBMIT ================= */
     const submit = async (e) => {
         e.preventDefault();
         setError("");
@@ -126,11 +121,7 @@ export default function Register() {
                 upazila: form.upazila,
             });
 
-            // Redirect to login after successful registration
-            navigate("/login", {
-                state: { registered: true },
-                replace: true,
-            });
+            navigate("/login", { replace: true });
         } catch (err) {
             setError(err.response?.data?.message || "Registration failed");
         } finally {
@@ -140,107 +131,139 @@ export default function Register() {
 
     return (
         <div className="min-h-screen grid md:grid-cols-2 bg-[#F8FAFC]">
-            {/* LEFT */}
-            <div className="hidden md:flex flex-col justify-center px-16 bg-linear-to-br from-rose-50 via-white to-blue-50">
-                <h1 className="text-3xl font-bold text-slate-900">
-                    Create your LifeLink account
-                </h1>
-                <p className="mt-4 text-slate-600">
-                    Join as a donor and help save lives across the country.
-                </p>
+
+            {/* ================= LEFT ================= */}
+            <div className="hidden md:flex items-center justify-center relative overflow-hidden px-16">
+                <div className="absolute inset-0 bg-linear-to-br from-rose-50 via-white to-blue-50" />
+                <div className="absolute -top-24 -left-24 w-96 h-96 bg-rose-300/30 rounded-full blur-[140px]" />
+                <div className="absolute bottom-0 right-0 w-80 h-80 bg-blue-300/20 rounded-full blur-[120px]" />
+
+                <div className="relative max-w-md">
+                    <div className="flex items-center gap-3 mb-6">
+                        <span className="w-11 h-11 rounded-xl bg-rose-600 text-white flex items-center justify-center font-bold">
+                            L
+                        </span>
+                        <span className="text-xl font-bold text-slate-900">
+                            LifeLink
+                        </span>
+                    </div>
+
+                    <h1 className="text-4xl font-bold text-slate-900 leading-tight">
+                        Join LifeLink.
+                        <br />
+                        Become a hero.
+                    </h1>
+
+                    <p className="mt-4 text-slate-600">
+                        Register as a blood donor and help save lives in your community.
+                    </p>
+                </div>
             </div>
 
-            {/* RIGHT */}
-            <div className="flex items-center justify-center px-6">
-                <div className="w-full max-w-md bg-white border rounded-2xl shadow-xl p-8">
-                    <h2 className="text-2xl text-rose-600 font-semibold text-center mb-1">
-                        Sign up
-                    </h2>
+            {/* ================= RIGHT ================= */}
+            <div className="flex items-center justify-center px-6 py-6">
+                <div
+                    className="
+            w-full max-w-md
+            bg-white/70 backdrop-blur-xl
+            rounded-3xl
+            shadow-[0_25px_60px_-30px_rgba(15,23,42,0.35)]
+            p-8
+          "
+                >
+                    {/* HEADER */}
+                    <div className="text-center">
+                        <div className="mx-auto w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center mb-4">
+                            <Droplet size={22} />
+                        </div>
 
-                    <p className="text-sm text-slate-500 text-center mb-4">
-                        Create your account
-                    </p>
+                        <h2 className="text-2xl font-semibold text-slate-900">
+                            Create your account
+                        </h2>
+                        <p className="mt-1 text-sm text-slate-500">
+                            Join LifeLink as a donor
+                        </p>
+                    </div>
 
+                    {/* ERROR */}
                     {error && (
-                        <div className="text-sm text-red-600 text-center mb-3">
+                        <div className="mt-4 text-sm text-red-600 bg-red-50 rounded-xl px-4 py-2 text-center">
                             {error}
                         </div>
                     )}
 
-                    <form onSubmit={submit} className="space-y-4">
+                    {/* FORM */}
+                    <form onSubmit={submit} className="mt-6 space-y-4">
+
+                        {/* AVATAR */}
+                        <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden">
+                                {avatarPreview ? (
+                                    <img
+                                        src={avatarPreview}
+                                        alt="avatar"
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <User className="text-slate-400" />
+                                )}
+                            </div>
+
+                            <label className="text-sm font-medium text-rose-600 cursor-pointer inline-flex items-center gap-2">
+                                <Upload size={16} />
+                                Upload avatar (optional)
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    hidden
+                                    onChange={(e) => {
+                                        setAvatarFile(e.target.files[0]);
+                                        setAvatarPreview(URL.createObjectURL(e.target.files[0]));
+                                    }}
+                                />
+                            </label>
+                        </div>
+
                         <input
                             name="name"
                             placeholder="Full name"
-                            className="w-full input border"
                             value={form.name}
                             onChange={handleChange}
+                            className="w-full rounded-xl px-4 py-2.5 shadow-sm focus:ring-2 focus:ring-rose-500 outline-none"
                         />
 
                         <input
-                            name="email"
                             type="email"
-                            placeholder="Email"
-                            className="w-full input border"
+                            name="email"
+                            placeholder="Email address"
                             value={form.email}
                             onChange={handleChange}
+                            className="w-full rounded-xl px-4 py-2.5 shadow-sm focus:ring-2 focus:ring-rose-500 outline-none"
                         />
 
-                        {/* Avatar */}
-                        <label className="flex items-center gap-2 text-sm cursor-pointer text-rose-600">
-                            <Upload size={16} />
-                            Upload avatar (optional)
-                            <input
-                                type="file"
-                                accept="image/*"
-                                hidden
-                                onChange={(e) => setAvatarFile(e.target.files[0])}
-                            />
-                        </label>
+                        {/* PASSWORD */}
+                        <PasswordInput
+                            label="Password"
+                            value={form.password}
+                            onChange={(v) => setForm({ ...form, password: v })}
+                            show={showPassword}
+                            toggle={() => setShowPassword((v) => !v)}
+                        />
 
-                        {/* Password */}
-                        <div className="relative">
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                name="password"
-                                placeholder="Password"
-                                className="w-full input border pr-10"
-                                value={form.password}
-                                onChange={handleChange}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-2.5 text-slate-500"
-                            >
-                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                            </button>
-                        </div>
+                        <PasswordInput
+                            label="Confirm Password"
+                            value={form.confirmPassword}
+                            onChange={(v) => setForm({ ...form, confirmPassword: v })}
+                            show={showConfirm}
+                            toggle={() => setShowConfirm((v) => !v)}
+                        />
 
-                        {/* Confirm */}
-                        <div className="relative">
-                            <input
-                                type={showConfirm ? "text" : "password"}
-                                name="confirmPassword"
-                                placeholder="Confirm password"
-                                className="w-full input border pr-10"
-                                value={form.confirmPassword}
-                                onChange={handleChange}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowConfirm(!showConfirm)}
-                                className="absolute right-3 top-2.5 text-slate-500"
-                            >
-                                {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-                            </button>
-                        </div>
-
-                        {/* Blood */}
+                        {/* BLOOD */}
                         <select
                             name="bloodGroup"
-                            className="w-full input border"
                             value={form.bloodGroup}
                             onChange={handleChange}
+                            className="w-full rounded-xl px-4 py-2.5 shadow-sm"
                         >
                             <option value="">Select blood group</option>
                             {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((bg) => (
@@ -248,12 +271,12 @@ export default function Register() {
                             ))}
                         </select>
 
-                        {/* District */}
+                        {/* DISTRICT */}
                         <select
                             name="district"
-                            className="w-full input border"
                             value={form.district}
                             onChange={handleChange}
+                            className="w-full rounded-xl px-4 py-2.5 shadow-sm"
                         >
                             <option value="">Select district</option>
                             {districts.map((d) => (
@@ -263,12 +286,12 @@ export default function Register() {
                             ))}
                         </select>
 
-                        {/* Upazila */}
+                        {/* UPAZILA */}
                         <select
                             name="upazila"
-                            className="w-full input border"
                             value={form.upazila}
                             onChange={handleChange}
+                            className="w-full rounded-xl px-4 py-2.5 shadow-sm"
                         >
                             <option value="">Select upazila</option>
                             {upazilas.map((u) => (
@@ -276,22 +299,49 @@ export default function Register() {
                             ))}
                         </select>
 
-                        <Button
-                            type="submit"
-                            disabled={submitting}
-                            className="w-full"
-                        >
+                        <Button type="submit" disabled={submitting} className="w-full mt-2 cursor-pointer">
                             {submitting ? "Creating account..." : "Create account"}
                         </Button>
                     </form>
 
-                    <p className="text-sm text-center mt-4 text-slate-600">
+                    <p className="mt-6 text-sm text-center text-slate-600">
                         Already have an account?{" "}
-                        <Link to="/login" className="text-rose-600 font-medium">
+                        <Link
+                            to="/login"
+                            className="text-rose-600 font-medium hover:underline"
+                        >
                             Sign in
                         </Link>
                     </p>
                 </div>
+            </div>
+        </div>
+    );
+}
+
+/* ================= PASSWORD INPUT ================= */
+function PasswordInput({ label, value, onChange, show, toggle }) {
+    return (
+        <div>
+            <label className="block text-sm text-slate-600 mb-1">
+                {label}
+            </label>
+
+            <div className="relative">
+                <input
+                    type={show ? "text" : "password"}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    className="w-full rounded-xl px-4 py-2.5 shadow-sm focus:ring-2 focus:ring-rose-500 outline-none pr-10"
+                />
+
+                <button
+                    type="button"
+                    onClick={toggle}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                >
+                    {show ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
             </div>
         </div>
     );
