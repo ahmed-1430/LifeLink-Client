@@ -79,27 +79,103 @@ export default function PublicLayout() {
                 <Outlet />
             </main>
 
-            {/* FOOTER */}
-            <footer className="bg-[#F8FAFC] border-t border-slate-200">
-                <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div className="flex items-center gap-2">
-                        <span className="w-8 h-8 rounded-lg bg-rose-600 text-white flex items-center justify-center font-bold">
-                            L
-                        </span>
-                        <span className="text-sm font-medium text-slate-700">
-                            LifeLink
-                        </span>
+            {/* ================= FOOTER ================= */}
+            <footer className="relative bg-white/60 backdrop-blur border-t border-slate-200">
+                {/* Glow */}
+                <div className="absolute inset-x-0 -top-24 h-24 bg-linear-to-r from-rose-200/30 via-transparent to-blue-200/30 blur-2xl pointer-events-none" />
+
+                <div className="relative w-11/12  mx-auto py-14 space-y-10">
+
+                    {/* TOP */}
+                    <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-8">
+
+                        {/* BRAND */}
+                        <div className="text-center md:text-left max-w-sm">
+                            <div className="flex items-center justify-center md:justify-start gap-3 mb-3">
+                                <span className="w-9 h-9 rounded-xl bg-rose-600 text-white flex items-center justify-center font-bold shadow-sm">
+                                    L
+                                </span>
+                                <span className="text-lg font-semibold tracking-tight text-slate-900">
+                                    LifeLink
+                                </span>
+                            </div>
+
+                            <p className="text-sm text-slate-600 leading-relaxed">
+                                Connecting blood donors, volunteers, and patients —
+                                because every drop can save a life.
+                            </p>
+                        </div>
+
+                        {/* LINKS */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 text-sm">
+                            <div className="space-y-2">
+                                <p className="font-semibold text-slate-800">Platform</p>
+                                <ul className="space-y-1 text-slate-600">
+                                    <li>
+                                        <a href="/requests" className="hover:text-rose-600 transition">
+                                            Donation Requests
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/search" className="hover:text-rose-600 transition">
+                                            Search Donors
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/funding" className="hover:text-rose-600 transition">
+                                            Funding
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div className="space-y-2">
+                                <p className="font-semibold text-slate-800">Account</p>
+                                <ul className="space-y-1 text-slate-600">
+                                    <li>
+                                        <a href="/login" className="hover:text-rose-600 transition">
+                                            Login
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/register" className="hover:text-rose-600 transition">
+                                            Register
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/dashboard" className="hover:text-rose-600 transition">
+                                            Dashboard
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div className="space-y-2">
+                                <p className="font-semibold text-slate-800">Support</p>
+                                <ul className="space-y-1 text-slate-600">
+                                    <li>📞 +880 1234-567890</li>
+                                    <li>✉️ support@lifelink.org</li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
 
-                    <p className="text-sm text-slate-500 text-center">
-                        Connecting blood donors and patients when every moment matters.
-                    </p>
+                    {/* DIVIDER */}
+                    <div className="h-px bg-slate-200/70" />
 
-                    <p className="text-sm text-slate-400">
-                        © {new Date().getFullYear()} LifeLink
-                    </p>
+                    {/* BOTTOM */}
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+                        <p>
+                            © {new Date().getFullYear()} LifeLink. All rights reserved.
+                        </p>
+
+                        <p className="text-center">
+                            Built with ❤️ to save lives
+                        </p>
+                    </div>
                 </div>
             </footer>
+
         </div>
     );
 }
