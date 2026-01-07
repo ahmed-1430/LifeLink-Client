@@ -108,7 +108,7 @@ export default function VolunteerHome() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-transparent text-sm focus:outline-none"
+            className="bg-transparent text-sm focus:outline-none cursor-pointer"
           >
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
@@ -121,7 +121,7 @@ export default function VolunteerHome() {
           <select
             value={bloodFilter}
             onChange={(e) => setBloodFilter(e.target.value)}
-            className="bg-transparent text-sm focus:outline-none"
+            className="bg-transparent text-sm focus:outline-none cursor-pointer"
           >
             <option value="all">All Blood Groups</option>
             {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(bg => (
@@ -212,7 +212,7 @@ function ActionBtn({ label, onClick, loading, icon, color }) {
     <button
       disabled={loading}
       onClick={onClick}
-      className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-medium text-white shadow
+      className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-medium text-white shadow cursor-pointer
         ${colors[color]} disabled:opacity-50`}
     >
       {loading ? "..." : icon}
