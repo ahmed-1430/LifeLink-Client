@@ -10,7 +10,7 @@ import { AuthContext } from "../../context/AuthContext";
 import PageLoader from "../../Component/ui/PageLoader";
 
 /* ===============================
-   STATUS UI MAP
+   STATUS META
 ================================ */
 const STATUS_META = {
     pending: {
@@ -47,12 +47,12 @@ export default function AllBloodDonationRequests() {
     const isVolunteer = user?.role === "volunteer";
 
     /* ===============================
-       LOAD REQUESTS
+       LOAD DATA
     ================================ */
     const loadRequests = async () => {
         try {
             const res = await API.get("/donations");
-            setRequests(res.data || []);
+            setRequests(Array.isArray(res.data) ? res.data : []);
         } finally {
             setLoading(false);
         }
@@ -63,7 +63,7 @@ export default function AllBloodDonationRequests() {
     }, []);
 
     /* ===============================
-       ACTIONS
+       ACTION HANDLER
     ================================ */
     const runAction = async (id, fn) => {
         setActionLoading(id);
@@ -89,46 +89,46 @@ export default function AllBloodDonationRequests() {
             ? requests
             : requests.filter((r) => r.donationStatus === filter);
 
-    /* ===============================
-       UI
-    ================================ */
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
+
             {/* HEADER */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-semibold text-slate-900">
+                    <h1 className="text-3xl font-semibold text-slate-900">
                         Blood Donation Requests
                     </h1>
                     <p className="text-sm text-slate-500">
-                        Manage and monitor all donation requests
+                        Monitor & manage all donation activities
                     </p>
                 </div>
 
-                <select
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                    className="rounded-xl border px-4 py-2 text-sm bg-white shadow-sm cursor-pointer"
-                >
-                    <option value="all">All</option>
-                    <option value="pending">Pending</option>
-                    <option value="inprogress">In Progress</option>
-                    <option value="done">Completed</option>
-                    <option value="canceled">Canceled</option>
-                </select>
+                <div className="rounded-xl bg-white/70 backdrop-blur-md shadow px-4 py-2">
+                    <select
+                        value={filter}
+                        onChange={(e) => setFilter(e.target.value)}
+                        className="bg-transparent text-sm focus:outline-none cursor-pointer"
+                    >
+                        <option value="all">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="inprogress">In Progress</option>
+                        <option value="done">Completed</option>
+                        <option value="canceled">Canceled</option>
+                    </select>
+                </div>
             </div>
 
             {/* DESKTOP TABLE */}
-            <div className="hidden md:block rounded-2xl border bg-white shadow-sm overflow-hidden">
+            <div className="hidden md:block rounded-3xl bg-white/70 backdrop-blur-md shadow-xl overflow-hidden">
                 <table className="w-full text-sm">
-                    <thead className="bg-slate-50 text-slate-600">
+                    <thead className="text-slate-500 border-b border-slate-100">
                         <tr>
-                            <th className="px-5 py-4 text-left">Recipient</th>
-                            <th className="px-5 py-4">Blood</th>
-                            <th className="px-5 py-4">Location</th>
-                            <th className="px-5 py-4">Schedule</th>
-                            <th className="px-5 py-4">Status</th>
-                            <th className="px-5 py-4 text-right">Actions</th>
+                            <th className="px-6 py-4 text-left">Recipient</th>
+                            <th className="px-6 py-4">Blood</th>
+                            <th className="px-6 py-4">Location</th>
+                            <th className="px-6 py-4">Schedule</th>
+                            <th className="px-6 py-4">Status</th>
+                            <th className="px-6 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
 
@@ -140,28 +140,26 @@ export default function AllBloodDonationRequests() {
                             return (
                                 <tr
                                     key={r._id}
-                                    className="border-t hover:bg-slate-50 transition"
+                                    className="hover:bg-slate-50/60 transition"
                                 >
-                                    <td className="px-5 py-4 font-medium">
+                                    <td className="px-6 py-4 font-medium">
                                         {r.recipientName}
                                     </td>
 
-                                    <td className="px-5 py-4 text-red-600 font-semibold">
+                                    <td className="px-6 py-4 font-semibold text-rose-600">
                                         {r.bloodGroup}
                                     </td>
 
-                                    <td className="px-5 py-4">
+                                    <td className="px-6 py-4 text-slate-600">
                                         {r.recipientDistrict}, {r.recipientUpazila}
                                     </td>
 
-                                    <td className="px-5 py-4">
+                                    <td className="px-6 py-4 text-xs text-slate-500">
                                         {r.donationDate}
-                                        <div className="text-xs text-slate-500">
-                                            {r.donationTime}
-                                        </div>
+                                        <div>{r.donationTime}</div>
                                     </td>
 
-                                    <td className="px-5 py-4">
+                                    <td className="px-6 py-4">
                                         <span
                                             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${meta.class}`}
                                         >
@@ -170,36 +168,38 @@ export default function AllBloodDonationRequests() {
                                         </span>
                                     </td>
 
-                                    <td className="px-5 py-4 text-right space-x-2">
-                                        {r.donationStatus === "pending" &&
-                                            (isAdmin || isVolunteer) && (
-                                                <ActionBtn
-                                                    loading={actionLoading === r._id}
-                                                    onClick={() => accept(r._id)}
-                                                    color="blue"
-                                                >
-                                                    Accept
-                                                </ActionBtn>
-                                            )}
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="inline-flex gap-2">
+                                            {r.donationStatus === "pending" &&
+                                                (isAdmin || isVolunteer) && (
+                                                    <ActionBtn
+                                                        loading={actionLoading === r._id}
+                                                        onClick={() => accept(r._id)}
+                                                        color="blue"
+                                                    >
+                                                        Accept
+                                                    </ActionBtn>
+                                                )}
 
-                                        {r.donationStatus === "inprogress" && isAdmin && (
-                                            <>
-                                                <ActionBtn
-                                                    loading={actionLoading === r._id}
-                                                    onClick={() => done(r._id)}
-                                                    color="green"
-                                                >
-                                                    Done
-                                                </ActionBtn>
-                                                <ActionBtn
-                                                    loading={actionLoading === r._id}
-                                                    onClick={() => cancel(r._id)}
-                                                    color="red"
-                                                >
-                                                    Cancel
-                                                </ActionBtn>
-                                            </>
-                                        )}
+                                            {r.donationStatus === "inprogress" && isAdmin && (
+                                                <>
+                                                    <ActionBtn
+                                                        loading={actionLoading === r._id}
+                                                        onClick={() => done(r._id)}
+                                                        color="green"
+                                                    >
+                                                        Done
+                                                    </ActionBtn>
+                                                    <ActionBtn
+                                                        loading={actionLoading === r._id}
+                                                        onClick={() => cancel(r._id)}
+                                                        color="red"
+                                                    >
+                                                        Cancel
+                                                    </ActionBtn>
+                                                </>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             );
@@ -209,7 +209,7 @@ export default function AllBloodDonationRequests() {
                             <tr>
                                 <td
                                     colSpan="6"
-                                    className="py-10 text-center text-slate-500"
+                                    className="py-16 text-center text-slate-500"
                                 >
                                     No donation requests found
                                 </td>
@@ -228,12 +228,12 @@ export default function AllBloodDonationRequests() {
                     return (
                         <div
                             key={r._id}
-                            className="rounded-2xl border bg-white p-5 shadow-sm space-y-3"
+                            className="rounded-3xl bg-white/70 backdrop-blur-md shadow-lg p-5 space-y-3"
                         >
-                            <div className="flex justify-between items-start">
+                            <div className="flex justify-between">
                                 <div>
                                     <p className="font-semibold">{r.recipientName}</p>
-                                    <p className="text-sm text-slate-500">
+                                    <p className="text-xs text-slate-500">
                                         {r.recipientDistrict}, {r.recipientUpazila}
                                     </p>
                                 </div>
@@ -247,7 +247,7 @@ export default function AllBloodDonationRequests() {
                             </div>
 
                             <div className="flex justify-between text-sm">
-                                <span className="text-red-600 font-semibold">
+                                <span className="font-semibold text-rose-600">
                                     {r.bloodGroup}
                                 </span>
                                 <span className="text-slate-500">
@@ -311,12 +311,12 @@ function ActionBtn({ children, onClick, loading, color, full }) {
         <button
             disabled={loading}
             onClick={onClick}
-            className={`px-4 py-2 rounded-xl text-sm font-medium text-white shadow-sm transition cursor-pointer
-        ${styles[color]}
-        ${full ? "flex-1" : ""}
-        disabled:opacity-50`}
+            className={`px-4 py-2 rounded-xl text-xs font-medium text-white shadow transition cursor-pointer
+            ${styles[color]}
+            ${full ? "flex-1" : ""}
+            disabled:opacity-50`}
         >
-            {loading ? "..." : children}
+            {loading ? "…" : children}
         </button>
     );
 }

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import API from "../../api/axios";
 import { Users, Droplet, Wallet, Activity } from "lucide-react";
+import PageLoader from "../../Component/ui/PageLoader";
 
 export default function AdminHome() {
     const [stats, setStats] = useState({
@@ -50,9 +51,7 @@ export default function AdminHome() {
     if (loading) {
         return (
             <div className="py-28 flex items-center justify-center">
-                <div className="animate-pulse text-slate-400 text-sm">
-                    Loading admin dashboard…
-                </div>
+                <PageLoader/>
             </div>
         );
     }
