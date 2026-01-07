@@ -1,6 +1,7 @@
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useState } from "react";
 import API from "../api/axios";
+import { Lock } from "lucide-react";
 
 export default function StripeCheckout({ amount, onSuccess }) {
     const stripe = useStripe();
@@ -16,14 +17,14 @@ export default function StripeCheckout({ amount, onSuccess }) {
         setError("");
 
         try {
-            //  Create payment intent
+            /* 1️⃣ Create payment intent */
             const intentRes = await API.post("/funds/create-intent", {
                 amount: Number(amount),
             });
 
             const clientSecret = intentRes.data.clientSecret;
 
-            //  Confirm card payment
+            /* 2️⃣ Confirm card payment */
             const result = await stripe.confirmCardPayment(clientSecret, {
                 payment_method: {
                     card: elements.getElement(CardElement),
@@ -36,7 +37,7 @@ export default function StripeCheckout({ amount, onSuccess }) {
                 return;
             }
 
-            //  Save funding record
+            /* 3️⃣ Save funding record */
             await API.post("/funds", {
                 amount: Number(amount),
                 paymentId: result.paymentIntent.id,
@@ -45,7 +46,7 @@ export default function StripeCheckout({ amount, onSuccess }) {
             onSuccess();
         } catch (err) {
             console.error(err);
-            setError("Payment failed");
+            setError("Payment failed. Please try again.");
         } finally {
             setProcessing(false);
         }
@@ -53,29 +54,62 @@ export default function StripeCheckout({ amount, onSuccess }) {
 
     return (
         <div className="space-y-4">
-            <div className="border rounded-xl p-4 bg-slate-50">
+
+            {/* CARD INPUT */}
+            <div
+                className="
+                rounded-2xl bg-white/70 backdrop-blur-md
+                shadow-inner border border-slate-200
+                px-4 py-4
+            "
+            >
                 <CardElement
                     options={{
                         style: {
                             base: {
                                 fontSize: "16px",
                                 color: "#0f172a",
-                                "::placeholder": { color: "#94a3b8" },
+                                fontFamily:
+                                    "Inter, system-ui, -apple-system, sans-serif",
+                                "::placeholder": {
+                                    color: "#94a3b8",
+                                },
+                            },
+                            invalid: {
+                                color: "#dc2626",
                             },
                         },
                     }}
                 />
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {/* ERROR */}
+            {error && (
+                <div className="rounded-xl bg-red-50 text-red-700 px-4 py-2 text-sm">
+                    {error}
+                </div>
+            )}
 
+            {/* PAY BUTTON */}
             <button
                 disabled={!stripe || processing}
                 onClick={handlePay}
-                className="w-full bg-rose-600 hover:bg-rose-700 text-white py-2 rounded-xl font-medium disabled:opacity-60"
+                className="
+                w-full flex items-center justify-center gap-2
+                rounded-xl bg-rose-600 py-2.5
+                text-white font-medium
+                hover:bg-rose-700 transition
+                disabled:opacity-50 cursor-pointer
+            "
             >
-                {processing ? "Processing..." : `Pay $${amount}`}
+                <Lock size={16} />
+                {processing ? "Processing payment..." : `Pay $${amount} securely`}
             </button>
+
+            {/* TRUST NOTE */}
+            <p className="text-xs text-center text-slate-400">
+                Payments are secured by Stripe
+            </p>
         </div>
     );
 }
