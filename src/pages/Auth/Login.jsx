@@ -3,28 +3,25 @@ import { Link, useNavigate } from "react-router-dom";
 import Button from "../../component/ui/Button";
 import { AuthContext } from "../../context/AuthContext";
 import API from "../../api/axios";
-import { Droplet } from "lucide-react";
+import { Droplet, Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
     const { login, user, loading: authLoading } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const [form, setForm] = useState({ email: "", password: "" });
+    const [showPassword, setShowPassword] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
 
-    /* ===============================
-       REDIRECT IF ALREADY LOGGED IN
-    ================================ */
+    /* ================= REDIRECT ================= */
     useEffect(() => {
         if (!authLoading && user) {
             navigate("/dashboard", { replace: true });
         }
     }, [user, authLoading, navigate]);
 
-    /* ===============================
-       SUBMIT
-    ================================ */
+    /* ================= SUBMIT ================= */
     const submit = async (e) => {
         e.preventDefault();
         setSubmitting(true);
@@ -37,15 +34,11 @@ export default function Login() {
             });
 
             login(res.data.token, res.data.user);
-
-            // Role-aware redirect (future-safe)
             navigate("/dashboard", { replace: true });
         } catch (err) {
-            const msg =
-                err.response?.data?.message ||
-                "Invalid email or password";
-
-            setError(msg);
+            setError(
+                err.response?.data?.message || "Invalid email or password"
+            );
         } finally {
             setSubmitting(false);
         }
@@ -53,34 +46,41 @@ export default function Login() {
 
     return (
         <div className="min-h-screen grid md:grid-cols-2 bg-[#F8FAFC]">
-            {/* LEFT */}
-            <div className="hidden md:flex flex-col justify-center px-16 bg-linear-to-br from-rose-50 via-white to-blue-50">
-                <div className="max-w-md">
-                    <div className="flex items-center gap-2 mb-6">
-                        <span className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center font-bold">
+
+            {/* ================= LEFT (INFO) ================= */}
+            <div className="hidden md:flex items-center justify-center px-12 relative overflow-hidden">
+                <div className="absolute inset-0 bg-linear-to-br from-rose-50 via-white to-blue-50" />
+                <div className="absolute -top-24 -left-24 w-96 h-96 bg-rose-300/30 rounded-full blur-[140px]" />
+                <div className="absolute bottom-0 right-0 w-80 h-80 bg-blue-300/20 rounded-full blur-[120px]" />
+
+                <div className="relative w-11/12 mx-auto">
+                    <div className="flex items-center gap-3 mb-6">
+                        <span className="w-11 h-11 rounded-xl bg-rose-600 text-white flex items-center justify-center font-bold">
                             L
                         </span>
-                        <span className="text-xl text-slate-900 font-bold">
+                        <span className="text-xl font-bold text-slate-900">
                             LifeLink
                         </span>
                     </div>
 
-                    <h1 className="text-3xl font-bold text-slate-900 leading-snug">
+                    <h1 className="text-4xl font-bold text-slate-900 leading-tight">
                         Welcome back.
                         <br />
-                        Let’s save lives together.
+                        Let’s save lives.
                     </h1>
 
                     <p className="mt-4 text-slate-600">
-                        Log in to manage blood requests, respond to emergencies,
-                        and stay connected with your community.
+                        Sign in to manage donation requests, help patients,
+                        and support your community.
                     </p>
                 </div>
             </div>
 
-            {/* RIGHT */}
+            {/* ================= RIGHT (FORM) ================= */}
             <div className="flex items-center justify-center px-6">
-                <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-xl p-8">
+                <div
+                    className="w-full max-w-md bg-white/70 backdrop-blur-xl rounded-3xl shadow-[0_25px_60px_-30px_rgba(15,23,42,0.35)] p-8"
+                >
                     {/* HEADER */}
                     <div className="text-center">
                         <div className="mx-auto w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center mb-4">
@@ -97,50 +97,63 @@ export default function Login() {
 
                     {/* ERROR */}
                     {error && (
-                        <div className="mt-4 text-sm text-red-600 text-center">
+                        <div className="mt-4 text-sm text-red-600 bg-red-50 rounded-xl px-4 py-2 text-center">
                             {error}
                         </div>
                     )}
 
                     {/* FORM */}
                     <form onSubmit={submit} className="mt-6 space-y-4">
+
+                        {/* EMAIL */}
                         <div>
                             <label className="block text-sm text-slate-600 mb-1">
                                 Email address
                             </label>
                             <input
                                 type="email"
-                                className="w-full rounded-xl border text-slate-600 border-slate-300 px-4 py-2 focus:ring-2 focus:ring-rose-500 focus:outline-none"
                                 placeholder="you@example.com"
                                 value={form.email}
                                 onChange={(e) =>
                                     setForm({ ...form, email: e.target.value })
                                 }
+                                className="w-full rounded-xl bg-white px-4 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-rose-500 outline-none"
                                 required
                             />
                         </div>
 
+                        {/* PASSWORD */}
                         <div>
                             <label className="block text-sm text-slate-600 mb-1">
                                 Password
                             </label>
-                            <input
-                                type="password"
-                                className="w-full rounded-xl border text-slate-600 border-slate-300 px-4 py-2 focus:ring-2 focus:ring-rose-500 focus:outline-none"
-                                placeholder="••••••••"
-                                value={form.password}
-                                onChange={(e) =>
-                                    setForm({ ...form, password: e.target.value })
-                                }
-                                required
-                            />
+
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="••••••••"
+                                    value={form.password}
+                                    onChange={(e) =>
+                                        setForm({ ...form, password: e.target.value })
+                                    }
+                                    className="w-full rounded-xl bg-white px-4 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-rose-500 outline-none pr-10"
+                                    required
+                                />
+
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword((v) => !v)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
                         </div>
 
                         <Button
                             type="submit"
                             disabled={submitting}
-                            className="w-full mt-2"
-                        >
+                            className="w-full mt-2 rounded-xl py-3 shadow-lg cursor-pointer">
                             {submitting ? "Signing in..." : "Sign in"}
                         </Button>
                     </form>
