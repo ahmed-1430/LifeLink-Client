@@ -1,67 +1,96 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Menu, ChevronDown, LogOut, User } from "lucide-react";
 import { AuthContext } from "../../context/AuthContext";
+import { Link } from "react-router-dom";
 
 export default function Topbar({ onMenuClick }) {
     const { user, logout } = useContext(AuthContext);
     const [open, setOpen] = useState(false);
+    const menuRef = useRef(null);
+
+    /* Close dropdown on outside click */
+    useEffect(() => {
+        const handler = (e) => {
+            if (menuRef.current && !menuRef.current.contains(e.target)) {
+                setOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, []);
 
     if (!user) return null;
 
     return (
-        <header className="h-16 bg-white border-b flex items-center justify-between px-4 sm:px-6">
-            {/* LEFT: Mobile Menu + Welcome */}
+        <header
+            className="
+        sticky top-0 z-40
+        h-16
+        bg-white/70 backdrop-blur-xl
+        border-b border-slate-200
+        flex items-center justify-between
+        px-4 sm:px-6
+      "
+        >
+            {/* ================= LEFT ================= */}
             <div className="flex items-center gap-3">
                 {/* Mobile menu */}
                 <button
                     onClick={onMenuClick}
-                    className="lg:hidden p-2 rounded-lg hover:bg-slate-100"
+                    className="lg:hidden p-2 rounded-xl hover:bg-slate-100 transition"
                     aria-label="Open sidebar"
                 >
                     <Menu size={20} />
                 </button>
 
-                <div>
-                    <h1 className="text-sm sm:text-lg font-semibold text-slate-800">
-                        Welcome, {user.name}
+                <div className="leading-tight">
+                    <p className="text-xs text-slate-500">Welcome back</p>
+                    <h1 className="text-sm sm:text-base font-semibold text-slate-900">
+                        {user.name}
                     </h1>
-                    <p className="text-xs sm:text-sm text-slate-500 capitalize">
-                        {user.role}
-                    </p>
                 </div>
+
+                {/* ROLE BADGE */}
+                <span className="hidden sm:inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium capitalize text-slate-600">
+                    {user.role}
+                </span>
             </div>
 
-            {/* RIGHT: User Menu */}
-            <div className="relative">
+            {/* ================= RIGHT ================= */}
+            <div className="relative" ref={menuRef}>
                 <button
                     onClick={() => setOpen((v) => !v)}
-                    className="flex items-center gap-2 p-1 rounded-full hover:bg-slate-100"
+                    className="flex items-center gap-2 rounded-full p-1 pr-2 hover:bg-slate-100 transition cursor-pointer"
                 >
                     <img
                         src={user.avatar || "/avatar-placeholder.png"}
                         alt="avatar"
-                        className="h-9 w-9 rounded-full object-cover border"
+                        className="h-9 w-9 rounded-full object-cover border border-slate-200"
                     />
-                    <ChevronDown size={16} className="text-slate-500 hidden sm:block" />
+                    <ChevronDown
+                        size={16}
+                        className={`hidden sm:block text-slate-500 transition-transform ${open ? "rotate-180" : ""
+                            }`}
+                    />
                 </button>
 
-                {/* Dropdown */}
+                {/* ================= DROPDOWN ================= */}
                 {open && (
                     <div
-                        className="absolute right-0 mt-2 w-44 bg-white border rounded-xl shadow-lg z-50"
-                        onMouseLeave={() => setOpen(false)}
+                        className="absolute right-0 mt-3 w-48 rounded-2xl bg-white/90 backdrop-blur-xl border border-slate-200 shadow-xl overflow-hidden"
                     >
-                        <a
-                            href="/dashboard/profile"
-                            className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-slate-100"
+                        <Link
+                            to="/dashboard/profile"
+                            onClick={() => setOpen(false)}
+                            className="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-100 transition"
                         >
                             <User size={16} />
                             Profile
-                        </a>
+                        </Link>
 
                         <button
                             onClick={logout}
-                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50"
+                            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-rose-600 hover:bg-rose-50 transition cursor-pointer"
                         >
                             <LogOut size={16} />
                             Logout

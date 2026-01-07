@@ -27,6 +27,7 @@ import AllUsers from "./pages/Dashboard/AllUsers";
 
 /* Profile */
 import ProfilePage from "./pages/Profile/ProfilePage";
+import DonationRequestDetails from "./pages/Dashboard/DonationRequestDetails";
 
 const router = createBrowserRouter([
   /* ===============================
@@ -61,6 +62,7 @@ const router = createBrowserRouter([
           { path: "all-requests", element: <AllBloodDonationRequests /> },
           { path: "funding", element: <Funding /> },
           { path: "profile", element: <ProfilePage /> },
+          { path: "requests/:id", element: <DonationRequestDetails /> },
 
           {
             path: "all-users",

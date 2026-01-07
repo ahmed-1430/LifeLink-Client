@@ -4,6 +4,7 @@ import API from "../../api/axios";
 import { AuthContext } from "../../context/AuthContext";
 import { toast } from "../../Component/toast";
 import { Filter, CheckCircle, Play } from "lucide-react";
+import PageLoader from "../../Component/ui/PageLoader";
 
 export default function VolunteerHome() {
   const { user } = useContext(AuthContext);
@@ -83,7 +84,7 @@ export default function VolunteerHome() {
   if (loading) {
     return (
       <div className="py-24 flex justify-center text-slate-400">
-        Loading volunteer dashboard…
+        <PageLoader />
       </div>
     );
   }

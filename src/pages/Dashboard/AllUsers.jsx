@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { useEffect, useState, useContext } from "react";
 import API from "../../api/axios";
 import PageLoader from "../../Component/ui/PageLoader";
