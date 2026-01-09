@@ -181,7 +181,7 @@ export default function AllBloodDonationRequests() {
                                                     </ActionBtn>
                                                 )}
 
-                                            {r.donationStatus === "inprogress" && isAdmin && (
+                                            {r.donationStatus === "inprogress" && (isAdmin || isVolunteer) && (
                                                 <>
                                                     <ActionBtn
                                                         loading={actionLoading === r._id}
@@ -190,13 +190,16 @@ export default function AllBloodDonationRequests() {
                                                     >
                                                         Done
                                                     </ActionBtn>
-                                                    <ActionBtn
-                                                        loading={actionLoading === r._id}
-                                                        onClick={() => cancel(r._id)}
-                                                        color="red"
-                                                    >
-                                                        Cancel
-                                                    </ActionBtn>
+                                                    {r.donationStatus === "inprogress" && isAdmin && (<>
+                                                        <ActionBtn
+                                                            loading={actionLoading === r._id}
+                                                            onClick={() => cancel(r._id)}
+                                                            color="red"
+                                                        >
+                                                            Cancel
+                                                        </ActionBtn>
+                                                    </>)}
+
                                                 </>
                                             )}
                                         </div>
