@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API from "../api/axios";
-import Spinner from "../component/ui/Spinner";
+import Spinner from "../Component/ui/Spinner";
 
 export default function PublicRequests() {
     const [requests, setRequests] = useState([]);

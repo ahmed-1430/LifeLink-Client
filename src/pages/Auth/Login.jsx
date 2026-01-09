@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Button from "../../component/ui/Button";
+import Button from "../../Component/ui/Button";
 import { AuthContext } from "../../context/AuthContext";
 import API from "../../api/axios";
 import { Droplet, Eye, EyeOff } from "lucide-react";

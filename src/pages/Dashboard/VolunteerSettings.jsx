@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import API from "../../api/axios";
-import { toast } from "../../components/toast";
+import { toast } from "../../Component/toast";
 
 export default function VolunteerSettings({ user }) {
     const [availability, setAvailability] = useState(user?.availability || "inactive");

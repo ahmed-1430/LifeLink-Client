@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import API from "../api/axios";
-import Button from "../component/ui/Button";
-import Spinner from "../component/ui/Spinner";
+import Button from "../Component/ui/Button";
+import Spinner from "../Component/ui/Spinner";
 import { Search as SearchIcon, Droplet, MapPin } from "lucide-react";
 
 export default function Search() {

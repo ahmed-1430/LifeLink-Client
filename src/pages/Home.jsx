@@ -9,7 +9,6 @@ import {
   Mail,
   MessageSquare,
 } from "lucide-react";
-import Button from "../component/ui/Button";
 import useReveal from "../hooks/useScrollReveal";
 import { AuthContext } from "../context/AuthContext";
 

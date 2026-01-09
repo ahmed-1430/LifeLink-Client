@@ -1,4 +1,5 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import './app.css'
 
 /* Layouts */
 import PublicLayout from "./layouts/PublicLayout";
